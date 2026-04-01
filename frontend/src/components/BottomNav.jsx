@@ -200,6 +200,13 @@ function BottomNav() {
               </button>
               <button
                 type="button"
+                onClick={() => goTo("/metrics")}
+                className="rounded-xl border border-[#cde0b6] bg-white px-3 py-3 text-sm font-bold text-[#2b5232]"
+              >
+                📊 Metrics
+              </button>
+              <button
+                type="button"
                 onClick={() => goTo("/home")}
                 className="rounded-xl border border-[#cde0b6] bg-white px-3 py-3 text-sm font-bold text-[#2b5232]"
               >

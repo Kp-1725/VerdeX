@@ -5,6 +5,7 @@ const {
   getProductMetadata,
   getMyProducts,
   getNextProductId,
+  getPriceRecommendation,
   getShelfProducts,
   archiveMyProduct,
 } = require("../controllers/productController");
@@ -15,6 +16,12 @@ const router = express.Router();
 
 router.get("/mine", requireAuth, authorizeRoles("Farmer"), getMyProducts);
 router.get("/next-id", requireAuth, authorizeRoles("Farmer"), getNextProductId);
+router.get(
+  "/price-recommendation",
+  requireAuth,
+  authorizeRoles("Farmer"),
+  getPriceRecommendation,
+);
 router.get("/shelf", requireAuth, authorizeRoles("Retailer"), getShelfProducts);
 router.delete(
   "/:productId",

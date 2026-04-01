@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const { fetchGovPriceRecommendation } = require("../services/govPriceService");
 
 function createHttpError(statusCode, message) {
   const error = new Error(message);
@@ -79,6 +80,24 @@ function parsePositivePrice(rawValue, fieldLabel) {
   }
 
   return Number(parsed.toFixed(2));
+}
+
+function inferStateFromLocation(location) {
+  const rawLocation = String(location || "").trim();
+  if (!rawLocation) {
+    return "";
+  }
+
+  const locationParts = rawLocation
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!locationParts.length) {
+    return "";
+  }
+
+  return locationParts[locationParts.length - 1];
 }
 
 async function createProduct(req, res) {
@@ -279,6 +298,36 @@ async function getNextProductId(req, res) {
   }
 }
 
+async function getPriceRecommendation(req, res) {
+  try {
+    const crop = String(req.query.crop || req.query.commodity || "").trim();
+    const requestedState = String(req.query.state || "").trim();
+    const inferredState = inferStateFromLocation(
+      req.user?.farmerProfile?.location,
+    );
+    const stateToUse = requestedState || inferredState;
+
+    if (!crop) {
+      return res
+        .status(400)
+        .json({ message: "Please enter a crop name to get recommendation." });
+    }
+
+    const recommendation = await fetchGovPriceRecommendation({
+      commodity: crop,
+      state: stateToUse,
+    });
+
+    return res.json({ recommendation });
+  } catch (error) {
+    return sendControllerError(
+      res,
+      error,
+      "Could not fetch government price recommendation.",
+    );
+  }
+}
+
 async function getShelfProducts(req, res) {
   try {
     const products = await Product.find({
@@ -349,6 +398,7 @@ module.exports = {
   getProductMetadata,
   getMyProducts,
   getNextProductId,
+  getPriceRecommendation,
   getShelfProducts,
   archiveMyProduct,
 };

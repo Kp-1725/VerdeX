@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const farmerRoutes = require("./routes/farmerRoutes");
 const requestRoutes = require("./routes/requestRoutes");
+const metricsRoutes = require("./routes/metricsRoutes");
 const { globalLimiter } = require("./middleware/securityMiddleware");
 
 dotenv.config();
@@ -47,6 +48,7 @@ app.use("/", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/farmers", farmerRoutes);
 app.use("/api/requests", requestRoutes);
+app.use("/api/metrics", metricsRoutes);
 
 app.use((err, req, res, next) => {
   // Centralized error handling keeps responses friendly and consistent.

@@ -61,8 +61,20 @@ export async function fetchNextProductId() {
   return response.data;
 }
 
+export async function fetchGovPriceRecommendation(params = {}) {
+  const response = await api.get("/api/products/price-recommendation", {
+    params,
+  });
+  return response.data;
+}
+
 export async function fetchShelfProducts() {
   const response = await api.get("/api/products/shelf");
+  return response.data;
+}
+
+export async function fetchPlatformMetrics() {
+  const response = await api.get("/api/metrics/overview");
   return response.data;
 }
 

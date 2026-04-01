@@ -4,17 +4,48 @@ import MobileContainer from "../components/MobileContainer";
 import LargeButton from "../components/LargeButton";
 import MessageBar from "../components/MessageBar";
 import { addProductOnChain, toFriendlyError } from "../utils/blockchain";
-import { createProductMetadata, fetchNextProductId } from "../utils/api";
+import {
+  createProductMetadata,
+  fetchGovPriceRecommendation,
+  fetchNextProductId,
+} from "../utils/api";
+
+function formatPriceInput(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return "";
+  }
+
+  return String(Number(parsed.toFixed(2)));
+}
+
+function convertPerQuintalToPerKg(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return Number((parsed / 100).toFixed(2));
+}
 
 function AddProductPage() {
   const [name, setName] = useState("");
   const [productId, setProductId] = useState("");
   const [farmerSellPrice, setFarmerSellPrice] = useState("");
+  const [stateInput, setStateInput] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [qrUrl, setQrUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [idLoading, setIdLoading] = useState(false);
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [priceRecommendation, setPriceRecommendation] = useState(null);
+
+  const recommendedPricePerKg = useMemo(() => {
+    return convertPerQuintalToPerKg(
+      priceRecommendation?.recommendationPriceInrPerQuintal,
+    );
+  }, [priceRecommendation]);
 
   const fallbackQrUrl = useMemo(() => {
     if (!productId) {
@@ -44,6 +75,45 @@ function AddProductPage() {
   useEffect(() => {
     assignNextProductId();
   }, []);
+
+  async function onRecommendPrice() {
+    setMessage("");
+    setError("");
+
+    if (!String(name || "").trim()) {
+      setError("Enter product name first to get recommendation.");
+      return;
+    }
+
+    setPriceLoading(true);
+    try {
+      const result = await fetchGovPriceRecommendation({
+        crop: String(name).trim(),
+        state: String(stateInput || "").trim() || undefined,
+      });
+
+      const recommended = Number(
+        result?.recommendation?.recommendationPriceInrPerQuintal,
+      );
+      if (!Number.isFinite(recommended) || recommended <= 0) {
+        throw new Error("Invalid recommendation received.");
+      }
+
+      setFarmerSellPrice(formatPriceInput(recommended));
+      setPriceRecommendation(result?.recommendation || null);
+      setMessage("Government price recommendation applied.");
+    } catch (err) {
+      setPriceRecommendation(null);
+      setError(
+        toFriendlyError(
+          err,
+          "Could not fetch government price recommendation.",
+        ),
+      );
+    } finally {
+      setPriceLoading(false);
+    }
+  }
 
   async function onSave() {
     setMessage("");
@@ -110,6 +180,77 @@ function AddProductPage() {
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
             placeholder="For example: Organic Rice"
           />
+        </div>
+
+        <div className="rounded-2xl border border-[#d6e3be] bg-[#f7fbef] p-3">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-[#315b35]">
+              Govt Price Recommendation
+            </p>
+            <span
+              className="cursor-help rounded-full border border-[#c8d8af] bg-white px-2 py-0.5 text-[10px] font-bold text-[#4f664a]"
+              title="Government mandi rates are usually published as INR per quintal, where 1 quintal = 100 kg."
+            >
+              UNIT INFO
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-[#597252]">
+            Uses govt mandi data when available, with prototype fallback for
+            demo reliability.
+          </p>
+          <p className="mt-1 text-[11px] text-[#5d7557]">
+            Unit note: Recommendation values are INR per quintal (100 kg).
+          </p>
+
+          <div className="mt-3 space-y-2">
+            <input
+              value={stateInput}
+              onChange={(e) => setStateInput(e.target.value)}
+              className="w-full rounded-xl border border-[#cddab5] bg-white px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
+              placeholder="State (optional), for example: Karnataka"
+            />
+            <button
+              type="button"
+              onClick={onRecommendPrice}
+              disabled={loading || priceLoading}
+              className="w-full rounded-xl border border-[#b8cf9e] bg-[#e9f5d9] px-3 py-2 text-sm font-bold text-[#2e6034] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {priceLoading ? "Fetching Govt Price..." : "Get Recommendation"}
+            </button>
+          </div>
+
+          {priceRecommendation ? (
+            <div className="mt-3 rounded-xl border border-[#d1dfbb] bg-white p-3 text-xs text-[#4f664a]">
+              <p className="font-semibold text-[#2f5733]">
+                Suggested: INR{" "}
+                {priceRecommendation.recommendationPriceInrPerQuintal} / quintal
+              </p>
+              <p className="mt-1">
+                Approx per-kg: INR {recommendedPricePerKg ?? "-"} / kg
+              </p>
+              <p className="mt-1">
+                Avg range:{" "}
+                {priceRecommendation.minPriceAverageInrPerQuintal ?? "-"} to{" "}
+                {priceRecommendation.maxPriceAverageInrPerQuintal ?? "-"}
+              </p>
+              <p className="mt-1">
+                Source: {priceRecommendation.source?.name || "Govt dataset"}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  if (recommendedPricePerKg) {
+                    setFarmerSellPrice(formatPriceInput(recommendedPricePerKg));
+                    setMessage("Per-kg converted recommendation applied.");
+                    setError("");
+                  }
+                }}
+                className="mt-2 rounded-lg border border-[#c6d8ad] bg-[#eff7e4] px-2 py-1 text-[11px] font-semibold text-[#335a38]"
+              >
+                Use per-kg value in sell price
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <div>

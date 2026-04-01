@@ -134,6 +134,13 @@ function HomePage() {
             onClick={() => navigate("/requests")}
             tone="secondary"
           />
+
+          <LargeButton
+            icon="📊"
+            text="Live Metrics"
+            onClick={() => navigate("/metrics")}
+            tone="secondary"
+          />
         </div>
       </section>
 

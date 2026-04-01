@@ -56,6 +56,7 @@ function MobileContainer({
   if (isLoggedIn) {
     navItems.push({ to: "/home", label: "Home", icon: "🏠" });
     navItems.push({ to: "/track", label: "Track", icon: "🔍" });
+    navItems.push({ to: "/metrics", label: "Metrics", icon: "📊" });
     navItems.push({ to: "/requests", label: "Requests", icon: "💬" });
 
     if (user?.role === "Farmer") {

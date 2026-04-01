@@ -12,6 +12,7 @@ import LandingPage from "./pages/LandingPage";
 import FarmerProfilePage from "./pages/FarmerProfilePage";
 import DiscoverFarmersPage from "./pages/DiscoverFarmersPage";
 import RequestsInboxPage from "./pages/RequestsInboxPage";
+import MetricsPage from "./pages/MetricsPage";
 
 function App() {
   return (
@@ -80,6 +81,15 @@ function App() {
         element={
           <ProtectedRoute>
             <RequestsInboxPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/metrics"
+        element={
+          <ProtectedRoute>
+            <MetricsPage />
           </ProtectedRoute>
         }
       />
