@@ -1,0 +1,30 @@
+const express = require("express");
+const {
+  createProduct,
+  addStageMetadata,
+  getProductMetadata,
+  getMyProducts,
+  deleteMyProduct,
+} = require("../controllers/productController");
+const { requireAuth } = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middleware/roleMiddleware");
+
+const router = express.Router();
+
+router.get("/mine", requireAuth, authorizeRoles("Farmer"), getMyProducts);
+router.delete(
+  "/:productId",
+  requireAuth,
+  authorizeRoles("Farmer"),
+  deleteMyProduct,
+);
+router.get("/:productId", getProductMetadata);
+router.post("/", requireAuth, authorizeRoles("Farmer"), createProduct);
+router.patch(
+  "/:productId/stage",
+  requireAuth,
+  authorizeRoles("Farmer", "Retailer"),
+  addStageMetadata,
+);
+
+module.exports = router;
