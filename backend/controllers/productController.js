@@ -1,5 +1,6 @@
 const Product = require("../models/Product");
 const { fetchGovPriceRecommendation } = require("../services/govPriceService");
+const { fetchMlPriceForecast } = require("../services/mlPriceService");
 
 function createHttpError(statusCode, message) {
   const error = new Error(message);
@@ -80,6 +81,24 @@ function parsePositivePrice(rawValue, fieldLabel) {
   }
 
   return Number(parsed.toFixed(2));
+}
+
+function clampNumber(rawValue, fallback, min, max) {
+  const parsed = Number(rawValue);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  return Math.min(max, Math.max(min, parsed));
+}
+
+function parseDaysAhead(rawValue) {
+  const parsed = Number(rawValue);
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 14) {
+    throw createHttpError(400, "daysAhead should be an integer from 1 to 14.");
+  }
+
+  return parsed;
 }
 
 function inferStateFromLocation(location) {
@@ -328,6 +347,51 @@ async function getPriceRecommendation(req, res) {
   }
 }
 
+async function getMlPriceForecast(req, res) {
+  try {
+    const crop = String(req.query.crop || req.query.commodity || "").trim();
+    const requestedState = String(req.query.state || "").trim();
+    const inferredState = inferStateFromLocation(
+      req.user?.farmerProfile?.location,
+    );
+    const stateToUse = requestedState || inferredState;
+
+    if (!crop) {
+      return res
+        .status(400)
+        .json({ message: "Please enter a crop name for ML forecast." });
+    }
+
+    const daysAhead = req.query.daysAhead
+      ? parseDaysAhead(req.query.daysAhead)
+      : 7;
+    const averageRating = clampNumber(req.query.averageRating, 4.2, 1, 5);
+    const reviewCount = Math.round(
+      clampNumber(req.query.reviewCount, 150, 1, 10000),
+    );
+    const activeSupply = Math.round(
+      clampNumber(req.query.activeSupply, 300, 1, 100000),
+    );
+
+    const forecast = await fetchMlPriceForecast({
+      productName: crop,
+      region: stateToUse,
+      daysAhead,
+      averageRating,
+      reviewCount,
+      activeSupply,
+    });
+
+    return res.json({ forecast });
+  } catch (error) {
+    return sendControllerError(
+      res,
+      error,
+      "Could not fetch ML price forecast.",
+    );
+  }
+}
+
 async function getShelfProducts(req, res) {
   try {
     const products = await Product.find({
@@ -399,6 +463,7 @@ module.exports = {
   getMyProducts,
   getNextProductId,
   getPriceRecommendation,
+  getMlPriceForecast,
   getShelfProducts,
   archiveMyProduct,
 };

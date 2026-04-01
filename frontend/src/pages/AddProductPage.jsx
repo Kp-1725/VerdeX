@@ -7,6 +7,7 @@ import { addProductOnChain, toFriendlyError } from "../utils/blockchain";
 import {
   createProductMetadata,
   fetchGovPriceRecommendation,
+  fetchMlPriceForecast,
   fetchNextProductId,
 } from "../utils/api";
 
@@ -40,12 +41,31 @@ function AddProductPage() {
   const [idLoading, setIdLoading] = useState(false);
   const [priceLoading, setPriceLoading] = useState(false);
   const [priceRecommendation, setPriceRecommendation] = useState(null);
+  const [mlLoading, setMlLoading] = useState(false);
+  const [mlForecast, setMlForecast] = useState(null);
 
   const recommendedPricePerKg = useMemo(() => {
     return convertPerQuintalToPerKg(
       priceRecommendation?.recommendationPriceInrPerQuintal,
     );
   }, [priceRecommendation]);
+
+  const mlFirstPrediction = useMemo(() => {
+    const first = mlForecast?.predictions?.[0];
+    if (!first) {
+      return null;
+    }
+
+    const predictedPrice = Number(first.predictedPrice);
+    if (!Number.isFinite(predictedPrice) || predictedPrice <= 0) {
+      return null;
+    }
+
+    return {
+      ...first,
+      predictedPrice,
+    };
+  }, [mlForecast]);
 
   const fallbackQrUrl = useMemo(() => {
     if (!productId) {
@@ -115,6 +135,41 @@ function AddProductPage() {
     }
   }
 
+  async function onFetchMlForecast() {
+    setMessage("");
+    setError("");
+
+    if (!String(name || "").trim()) {
+      setError("Enter product name first to run ML forecast.");
+      return;
+    }
+
+    setMlLoading(true);
+    try {
+      const result = await fetchMlPriceForecast({
+        crop: String(name).trim(),
+        state: String(stateInput || "").trim() || undefined,
+        daysAhead: 7,
+      });
+
+      const forecast = result?.forecast;
+      const predictions = Array.isArray(forecast?.predictions)
+        ? forecast.predictions
+        : [];
+      if (!predictions.length) {
+        throw new Error("No prediction series returned.");
+      }
+
+      setMlForecast(forecast);
+      setMessage("ML forecast loaded.");
+    } catch (err) {
+      setMlForecast(null);
+      setError(toFriendlyError(err, "Could not fetch ML price forecast."));
+    } finally {
+      setMlLoading(false);
+    }
+  }
+
   async function onSave() {
     setMessage("");
     setError("");
@@ -141,6 +196,7 @@ function AddProductPage() {
       setMessage("Saved Successfully ✅");
       setName("");
       setFarmerSellPrice("");
+      setMlForecast(null);
       await assignNextProductId();
     } catch (err) {
       const friendly = toFriendlyError(
@@ -248,6 +304,69 @@ function AddProductPage() {
                 className="mt-2 rounded-lg border border-[#c6d8ad] bg-[#eff7e4] px-2 py-1 text-[11px] font-semibold text-[#335a38]"
               >
                 Use per-kg value in sell price
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="rounded-2xl border border-[#d6e3be] bg-[#f7fbef] p-3">
+          <p className="text-sm font-semibold text-[#315b35]">
+            ML Price Forecast (7 Days)
+          </p>
+          <p className="mt-1 text-xs text-[#597252]">
+            Uses the team Random Forest model service, with prototype fallback
+            when the ML API is offline.
+          </p>
+          <p className="mt-1 text-[11px] text-[#5d7557]">
+            Unit note: ML forecast values are INR per kg.
+          </p>
+
+          <button
+            type="button"
+            onClick={onFetchMlForecast}
+            disabled={loading || mlLoading}
+            className="mt-3 w-full rounded-xl border border-[#b8cf9e] bg-[#e9f5d9] px-3 py-2 text-sm font-bold text-[#2e6034] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {mlLoading ? "Running Forecast..." : "Get ML Forecast"}
+          </button>
+
+          {mlForecast ? (
+            <div className="mt-3 rounded-xl border border-[#d1dfbb] bg-white p-3 text-xs text-[#4f664a]">
+              <p className="font-semibold text-[#2f5733]">
+                Day 1 prediction: INR {mlFirstPrediction?.predictedPrice ?? "-"}{" "}
+                / kg
+              </p>
+              <p className="mt-1">
+                Range: INR {mlFirstPrediction?.lowerBound ?? "-"} -{" "}
+                {mlFirstPrediction?.upperBound ?? "-"} / kg
+              </p>
+              <p className="mt-1">
+                Source: {mlForecast?.source?.name || "ML model"}
+              </p>
+              <p className="mt-1">Unit: {mlForecast?.unit || "INR/kg"}</p>
+
+              <div className="mt-2 space-y-1 rounded-lg border border-[#d4e1c0] bg-[#f8fcf1] p-2">
+                {(mlForecast?.predictions || []).slice(0, 3).map((item) => (
+                  <p key={item.date} className="text-[11px] text-[#4c6348]">
+                    {item.date}: INR {item.predictedPrice} / kg
+                  </p>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (mlFirstPrediction?.predictedPrice) {
+                    setFarmerSellPrice(
+                      formatPriceInput(mlFirstPrediction.predictedPrice),
+                    );
+                    setMessage("ML day-1 predicted price applied.");
+                    setError("");
+                  }
+                }}
+                className="mt-2 rounded-lg border border-[#c6d8ad] bg-[#eff7e4] px-2 py-1 text-[11px] font-semibold text-[#335a38]"
+              >
+                Use ML day-1 price (INR/kg)
               </button>
             </div>
           ) : null}

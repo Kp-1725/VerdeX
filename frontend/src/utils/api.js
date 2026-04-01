@@ -68,6 +68,13 @@ export async function fetchGovPriceRecommendation(params = {}) {
   return response.data;
 }
 
+export async function fetchMlPriceForecast(params = {}) {
+  const response = await api.get("/api/products/price-forecast", {
+    params,
+  });
+  return response.data;
+}
+
 export async function fetchShelfProducts() {
   const response = await api.get("/api/products/shelf");
   return response.data;

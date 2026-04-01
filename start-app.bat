@@ -3,6 +3,9 @@ setlocal
 
 set "ROOT=%~dp0"
 set "MONGO_SERVICE=MongoDB"
+set "ML_DIR=%ROOT%ml-price-model"
+set "PY_CMD="
+set "ML_PYTHON=%ML_DIR%\venv\Scripts\python.exe"
 
 echo Starting Agricultural Supply Chain Traceability app...
 
@@ -51,11 +54,30 @@ start "Backend API" cmd /k "cd /d ""%ROOT%backend"" && npm run dev"
 timeout /t 2 >nul
 start "Frontend App" cmd /k "cd /d ""%ROOT%frontend"" && npm run dev"
 
+if exist "%ML_DIR%\price_prediction_api.py" (
+  if exist "%ML_PYTHON%" (
+    start "ML Price API" "%ML_PYTHON%" "%ML_DIR%\price_prediction_api.py"
+  ) else (
+    where py >nul 2>&1 && set "PY_CMD=py"
+    if not defined PY_CMD where python >nul 2>&1 && set "PY_CMD=python"
+
+    if defined PY_CMD (
+      start "ML Price API" cmd /k "cd /d ""%ML_DIR%"" && %PY_CMD% ""price_prediction_api.py"""
+    ) else (
+      echo [WARN] Python executable not found. ML service was not started.
+      echo        Install Python 3.8+ and ensure py or python is available in PATH.
+    )
+  )
+) else (
+  echo [INFO] ml-price-model folder not found. Skipping ML service startup.
+)
+
 echo.
 echo Backend:  http://localhost:5000
 echo Frontend: http://localhost:5173
+echo ML API:   http://127.0.0.1:5001
 echo.
-echo Two terminals were opened for backend and frontend.
+echo App terminals were opened for available services.
 
 :end
 endlocal

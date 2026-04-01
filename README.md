@@ -10,6 +10,7 @@ VerdeX is a role-based agri traceability platform that helps farmers and retaile
 - Public product page for transparency
 - Live platform metrics dashboard
 - Government-inspired crop price recommendation flow with prototype fallback mode
+- Team ML-based short-term price forecasting integration
 
 ## Tech Stack
 
@@ -95,6 +96,10 @@ frontend/
     hooks/
     pages/
     utils/
+ml-price-model/
+  data_schema.py
+  price_model.py
+  price_prediction_api.py
 ```
 
 ## Core User Flows
@@ -156,6 +161,18 @@ Configured in backend environment:
 Endpoint:
 
 - GET /api/products/price-recommendation?crop=<name>&state=<state>
+
+## ML Price Forecast Integration
+
+VerdeX now includes a Python Random Forest service in [ml-price-model/README.md](ml-price-model/README.md).
+
+- Backend endpoint: GET /api/products/price-forecast?crop=<name>&state=<state>&daysAhead=7
+- Forecast unit: INR/kg (per kilogram)
+- Add Product UI can load and apply day-1 ML forecast price
+- Backend mode control:
+  - ML_PRICE_MODE=auto: live API if available, else prototype fallback
+  - ML_PRICE_MODE=live: strict live ML API mode
+  - ML_PRICE_MODE=prototype: always fallback series
 
 ## Scripts
 

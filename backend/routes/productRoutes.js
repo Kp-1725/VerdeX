@@ -6,6 +6,7 @@ const {
   getMyProducts,
   getNextProductId,
   getPriceRecommendation,
+  getMlPriceForecast,
   getShelfProducts,
   archiveMyProduct,
 } = require("../controllers/productController");
@@ -21,6 +22,12 @@ router.get(
   requireAuth,
   authorizeRoles("Farmer"),
   getPriceRecommendation,
+);
+router.get(
+  "/price-forecast",
+  requireAuth,
+  authorizeRoles("Farmer"),
+  getMlPriceForecast,
 );
 router.get("/shelf", requireAuth, authorizeRoles("Retailer"), getShelfProducts);
 router.delete(
