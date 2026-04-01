@@ -8,6 +8,7 @@ import { toFriendlyError } from "../utils/blockchain";
 import MessageBar from "../components/MessageBar";
 import { MagicCard } from "@/components/ui/magic-card";
 import { useLanguage } from "../hooks/LanguageContext";
+import { QRCodeCanvas } from "qrcode.react";
 
 function HomePage() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function HomePage() {
   const [productError, setProductError] = useState("");
   const [productMessage, setProductMessage] = useState("");
   const [archivingId, setArchivingId] = useState(null);
+  const [openMenuProductId, setOpenMenuProductId] = useState(null);
 
   useEffect(() => {
     async function loadMyProducts() {
@@ -73,6 +75,18 @@ function HomePage() {
     } finally {
       setArchivingId(null);
     }
+  }
+
+  function toggleItemMenu(productId) {
+    setOpenMenuProductId((prev) => (prev === productId ? null : productId));
+  }
+
+  function getProductUrl(item) {
+    if (item?.qrUrl) {
+      return item.qrUrl;
+    }
+
+    return `${window.location.origin}/product/${item.productId}`;
   }
 
   const isFarmer = user?.role === "Farmer";
@@ -200,45 +214,75 @@ function HomePage() {
                     gradientSize={120}
                     gradientOpacity={0.1}
                   >
-                    <div className="flex items-center justify-between rounded-xl border border-[#d4e0bf] bg-white px-3 py-2">
-                      <div>
-                        <p className="text-sm font-bold text-[#2d4831]">
-                          {item.name}
-                        </p>
-                        <p className="text-xs text-[#607059]">
-                          ID: {item.productId}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
+                    <div className="rounded-xl border border-[#d4e0bf] bg-white px-3 py-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-[#2d4831]">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-[#607059]">
+                            ID: {item.productId}
+                          </p>
+                        </div>
                         <button
                           type="button"
-                          onClick={() =>
-                            navigate(
-                              `/update-status?productId=${item.productId}`,
-                            )
-                          }
-                          className="rounded-lg bg-[#e8f5dc] px-3 py-2 text-xs font-bold text-[#245b2c]"
+                          onClick={() => toggleItemMenu(item.productId)}
+                          className="rounded-lg border border-[#cfe0b8] bg-[#f4fae8] px-3 py-2 text-xs font-bold text-[#2b5232]"
                         >
-                          {tr("Update")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => navigate(`/product/${item.productId}`)}
-                          className="rounded-lg bg-[#edf5ff] px-3 py-2 text-xs font-bold text-[#24507c]"
-                        >
-                          {tr("Open")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onArchiveProduct(item)}
-                          disabled={archivingId === item.productId}
-                          className="rounded-lg bg-[#ffe6e0] px-3 py-2 text-xs font-bold text-[#8a2f24] disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {archivingId === item.productId
-                            ? tr("Archiving...")
-                            : tr("Archive")}
+                          {openMenuProductId === item.productId
+                            ? tr("Close")
+                            : tr("View")}
                         </button>
                       </div>
+
+                      {openMenuProductId === item.productId ? (
+                        <div className="mt-3 grid gap-3 rounded-xl border border-[#d8e5c1] bg-[#f8fbef] p-3 md:grid-cols-[160px_1fr]">
+                          <div className="rounded-xl border border-[#d2dfbb] bg-white p-2 text-center">
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-[#5b7157]">
+                              {tr("QR Preview")}
+                            </p>
+                            <div className="mx-auto w-fit rounded-lg bg-white p-2">
+                              <QRCodeCanvas
+                                value={getProductUrl(item)}
+                                size={110}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(
+                                  `/update-status?productId=${item.productId}`,
+                                )
+                              }
+                              className="rounded-lg bg-[#e8f5dc] px-3 py-2 text-xs font-bold text-[#245b2c]"
+                            >
+                              {tr("Update")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(`/product/${item.productId}`)
+                              }
+                              className="rounded-lg bg-[#edf5ff] px-3 py-2 text-xs font-bold text-[#24507c]"
+                            >
+                              {tr("Open")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onArchiveProduct(item)}
+                              disabled={archivingId === item.productId}
+                              className="rounded-lg bg-[#ffe6e0] px-3 py-2 text-xs font-bold text-[#8a2f24] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {archivingId === item.productId
+                                ? tr("Archiving...")
+                                : tr("Archive")}
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </MagicCard>
                 ))}

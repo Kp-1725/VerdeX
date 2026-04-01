@@ -392,7 +392,7 @@ async function getMyProducts(req, res) {
       .sort({ createdAt: -1 })
       .limit(25)
       .select(
-        "productId name createdAt farmerSellPrice retailPrice pricingCurrency",
+        "productId name createdAt farmerSellPrice retailPrice pricingCurrency qrUrl",
       );
 
     return res.json({ products });
