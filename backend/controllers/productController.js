@@ -56,6 +56,15 @@ function normalizeChainProof(rawProof) {
 }
 
 function sendControllerError(res, error, fallbackMessage) {
+  const duplicateProductId =
+    error?.code === 11000 &&
+    (error?.keyPattern?.productId === 1 ||
+      String(error?.message || "").includes("productId"));
+
+  if (duplicateProductId) {
+    return res.status(409).json({ message: "Product ID already exists." });
+  }
+
   if (error?.statusCode) {
     return res.status(error.statusCode).json({ message: error.message });
   }
@@ -252,6 +261,24 @@ async function getMyProducts(req, res) {
   }
 }
 
+async function getNextProductId(req, res) {
+  try {
+    const latestProduct = await Product.findOne({})
+      .sort({ productId: -1 })
+      .select("productId")
+      .lean();
+
+    const baseId =
+      latestProduct && Number.isInteger(latestProduct.productId)
+        ? latestProduct.productId + 1
+        : 1001;
+
+    return res.json({ nextProductId: baseId });
+  } catch (error) {
+    return res.status(500).json({ message: "Could not generate product ID." });
+  }
+}
+
 async function getShelfProducts(req, res) {
   try {
     const products = await Product.find({
@@ -321,6 +348,7 @@ module.exports = {
   addStageMetadata,
   getProductMetadata,
   getMyProducts,
+  getNextProductId,
   getShelfProducts,
   archiveMyProduct,
 };

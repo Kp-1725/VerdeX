@@ -56,6 +56,11 @@ export async function fetchMyProducts() {
   return response.data;
 }
 
+export async function fetchNextProductId() {
+  const response = await api.get("/api/products/next-id");
+  return response.data;
+}
+
 export async function fetchShelfProducts() {
   const response = await api.get("/api/products/shelf");
   return response.data;

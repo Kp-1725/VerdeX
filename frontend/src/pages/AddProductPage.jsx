@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import MobileContainer from "../components/MobileContainer";
 import LargeButton from "../components/LargeButton";
 import MessageBar from "../components/MessageBar";
 import { addProductOnChain, toFriendlyError } from "../utils/blockchain";
-import { createProductMetadata } from "../utils/api";
+import { createProductMetadata, fetchNextProductId } from "../utils/api";
 
 function AddProductPage() {
   const [name, setName] = useState("");
@@ -14,6 +14,7 @@ function AddProductPage() {
   const [error, setError] = useState("");
   const [qrUrl, setQrUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [idLoading, setIdLoading] = useState(false);
 
   const fallbackQrUrl = useMemo(() => {
     if (!productId) {
@@ -22,6 +23,27 @@ function AddProductPage() {
 
     return `${window.location.origin}/product/${productId}`;
   }, [productId]);
+
+  async function assignNextProductId() {
+    setIdLoading(true);
+    try {
+      const data = await fetchNextProductId();
+      const nextId = Number(data?.nextProductId);
+      if (!Number.isInteger(nextId) || nextId <= 0) {
+        throw new Error("Invalid product ID generated.");
+      }
+
+      setProductId(String(nextId));
+    } catch (err) {
+      setError(toFriendlyError(err, "Could not auto-generate product ID."));
+    } finally {
+      setIdLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    assignNextProductId();
+  }, []);
 
   async function onSave() {
     setMessage("");
@@ -47,10 +69,23 @@ function AddProductPage() {
           `${window.location.origin}/product/${productId}`,
       );
       setMessage("Saved Successfully ✅");
+      setName("");
+      setFarmerSellPrice("");
+      await assignNextProductId();
     } catch (err) {
-      setError(
-        toFriendlyError(err, "Could not save product. Please try again."),
+      const friendly = toFriendlyError(
+        err,
+        "Could not save product. Please try again.",
       );
+
+      if (friendly === "Product ID already exists.") {
+        await assignNextProductId();
+        setError(
+          "Product ID collision detected. A new ID was generated. Please save again.",
+        );
+      } else {
+        setError(friendly);
+      }
     } finally {
       setLoading(false);
     }
@@ -78,16 +113,24 @@ function AddProductPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Product ID
-          </label>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <label className="block text-sm font-semibold text-[#375138]">
+              Product ID (Auto)
+            </label>
+            <button
+              type="button"
+              onClick={assignNextProductId}
+              disabled={idLoading || loading}
+              className="rounded-full border border-[#bcd2a5] bg-[#eef7e1] px-3 py-1 text-xs font-bold text-[#2d5d34] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {idLoading ? "Generating..." : "Refresh ID"}
+            </button>
+          </div>
           <input
             value={productId}
-            onChange={(e) =>
-              setProductId(e.target.value.replace(/[^0-9]/g, ""))
-            }
-            className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="For example: 1001"
+            readOnly
+            className="w-full rounded-2xl border border-[#cddab5] bg-[#f3fae8] px-4 py-4 text-lg outline-none"
+            placeholder="Auto-generated"
           />
         </div>
 

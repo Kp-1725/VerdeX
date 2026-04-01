@@ -6,6 +6,18 @@ import { updateMyFarmerProfile } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
 import { useAuth } from "../hooks/useAuth";
 
+const FIELD_LIMITS = {
+  farmName: 80,
+  location: 120,
+  acreage: 8,
+  preferredContact: 40,
+  primaryCrops: 180,
+  farmingMethod: 80,
+  certifications: 180,
+  phone: 20,
+  bio: 600,
+};
+
 function FarmerProfilePage() {
   const { user } = useAuth();
 
@@ -37,8 +49,17 @@ function FarmerProfilePage() {
     setForm(initialProfile);
   }, [initialProfile]);
 
+  function limit(field, value) {
+    const max = FIELD_LIMITS[field];
+    if (!max || typeof value !== "string") {
+      return value;
+    }
+
+    return value.slice(0, max);
+  }
+
   function onChange(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: limit(field, value) }));
   }
 
   async function onSave() {
@@ -85,6 +106,7 @@ function FarmerProfilePage() {
           <input
             value={form.farmName}
             onChange={(e) => onChange("farmName", e.target.value)}
+            maxLength={FIELD_LIMITS.farmName}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
             placeholder="Green Valley Farm"
           />
@@ -97,6 +119,7 @@ function FarmerProfilePage() {
           <input
             value={form.location}
             onChange={(e) => onChange("location", e.target.value)}
+            maxLength={FIELD_LIMITS.location}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
             placeholder="Village, District"
           />
@@ -105,13 +128,18 @@ function FarmerProfilePage() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-sm font-semibold text-[#375138]">
-              Acreage
+              Acres
             </label>
             <input
               value={form.acreage}
-              onChange={(e) =>
-                onChange("acreage", e.target.value.replace(/[^0-9.]/g, ""))
-              }
+              onChange={(e) => {
+                const sanitized = e.target.value
+                  .replace(/[^0-9.]/g, "")
+                  .replace(/(\..*)\./g, "$1");
+                onChange("acreage", sanitized);
+              }}
+              inputMode="decimal"
+              maxLength={FIELD_LIMITS.acreage}
               className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
               placeholder="12"
             />
@@ -124,6 +152,7 @@ function FarmerProfilePage() {
             <input
               value={form.preferredContact}
               onChange={(e) => onChange("preferredContact", e.target.value)}
+              maxLength={FIELD_LIMITS.preferredContact}
               className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
               placeholder="Phone / Chat"
             />
@@ -137,6 +166,7 @@ function FarmerProfilePage() {
           <input
             value={form.primaryCrops}
             onChange={(e) => onChange("primaryCrops", e.target.value)}
+            maxLength={FIELD_LIMITS.primaryCrops}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
             placeholder="Rice, Wheat, Tomato"
           />
@@ -149,6 +179,7 @@ function FarmerProfilePage() {
           <input
             value={form.farmingMethod}
             onChange={(e) => onChange("farmingMethod", e.target.value)}
+            maxLength={FIELD_LIMITS.farmingMethod}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
             placeholder="Organic / Natural / Conventional"
           />
@@ -161,6 +192,7 @@ function FarmerProfilePage() {
           <input
             value={form.certifications}
             onChange={(e) => onChange("certifications", e.target.value)}
+            maxLength={FIELD_LIMITS.certifications}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
             placeholder="Organic India, FSSAI"
           />
@@ -173,6 +205,7 @@ function FarmerProfilePage() {
           <input
             value={form.phone}
             onChange={(e) => onChange("phone", e.target.value)}
+            maxLength={FIELD_LIMITS.phone}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
             placeholder="Contact number"
           />
@@ -185,6 +218,7 @@ function FarmerProfilePage() {
           <textarea
             value={form.bio}
             onChange={(e) => onChange("bio", e.target.value)}
+            maxLength={FIELD_LIMITS.bio}
             rows={4}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
             placeholder="Tell retailers about your farm quality and strengths"

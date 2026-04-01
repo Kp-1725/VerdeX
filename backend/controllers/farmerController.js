@@ -1,9 +1,27 @@
 const User = require("../models/User");
 
+const PROFILE_LIMITS = {
+  farmName: 80,
+  location: 120,
+  farmingMethod: 80,
+  preferredContact: 40,
+  phone: 20,
+  bio: 600,
+  listItem: 40,
+};
+
+function textLength(value) {
+  return String(value || "").trim().length;
+}
+
 function normalizeList(value) {
   if (Array.isArray(value)) {
     return value
-      .map((item) => String(item || "").trim())
+      .map((item) =>
+        String(item || "")
+          .trim()
+          .slice(0, PROFILE_LIMITS.listItem),
+      )
       .filter(Boolean)
       .slice(0, 20);
   }
@@ -11,7 +29,7 @@ function normalizeList(value) {
   if (typeof value === "string") {
     return value
       .split(",")
-      .map((item) => item.trim())
+      .map((item) => item.trim().slice(0, PROFILE_LIMITS.listItem))
       .filter(Boolean)
       .slice(0, 20);
   }
@@ -59,7 +77,35 @@ async function upsertMyFarmerProfile(req, res) {
     if (acreage !== null && (!Number.isFinite(acreage) || acreage < 0)) {
       return res
         .status(400)
-        .json({ message: "Acreage should be a valid value." });
+        .json({ message: "Acres should be a valid value." });
+    }
+
+    if (textLength(farmName) > PROFILE_LIMITS.farmName) {
+      return res.status(400).json({ message: "Farm name is too long." });
+    }
+
+    if (textLength(location) > PROFILE_LIMITS.location) {
+      return res.status(400).json({ message: "Location is too long." });
+    }
+
+    if (textLength(payload?.farmingMethod) > PROFILE_LIMITS.farmingMethod) {
+      return res.status(400).json({ message: "Farming method is too long." });
+    }
+
+    if (
+      textLength(payload?.preferredContact) > PROFILE_LIMITS.preferredContact
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Preferred contact is too long." });
+    }
+
+    if (textLength(payload?.phone) > PROFILE_LIMITS.phone) {
+      return res.status(400).json({ message: "Phone is too long." });
+    }
+
+    if (textLength(bio) > PROFILE_LIMITS.bio) {
+      return res.status(400).json({ message: "About farm is too long." });
     }
 
     req.user.farmerProfile = {

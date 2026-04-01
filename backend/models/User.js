@@ -7,11 +7,13 @@ const farmerProfileSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+      maxlength: 80,
     },
     location: {
       type: String,
       default: "",
       trim: true,
+      maxlength: 120,
     },
     acreage: {
       type: Number,
@@ -26,6 +28,7 @@ const farmerProfileSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+      maxlength: 80,
     },
     certifications: {
       type: [String],
@@ -41,11 +44,13 @@ const farmerProfileSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+      maxlength: 20,
     },
     preferredContact: {
       type: String,
       default: "",
       trim: true,
+      maxlength: 40,
     },
   },
   { _id: false },

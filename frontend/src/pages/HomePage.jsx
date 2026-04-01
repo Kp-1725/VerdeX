@@ -70,60 +70,72 @@ function HomePage() {
     }
   }
 
+  const isFarmer = user?.role === "Farmer";
+  const isRetailer = user?.role === "Retailer";
+
   return (
     <MobileContainer
       title={`Hello, ${user?.name || "User"}`}
       subtitle="Choose what you want to do"
       showNav
     >
-      <div className="space-y-3">
-        {user?.role === "Farmer" ? (
+      <section className="rounded-2xl border border-[#d4e2bf] bg-[#f5fbe9] p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-base font-black text-[#2d4831]">Quick Actions</h2>
+          <span className="rounded-full bg-[#e7f3d6] px-3 py-1 text-[11px] font-bold text-[#4b6848]">
+            One-tap flows
+          </span>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          {isFarmer ? (
+            <LargeButton
+              icon="➕"
+              text="Add Product"
+              onClick={() => navigate("/add-product")}
+            />
+          ) : null}
+
           <LargeButton
-            icon="➕"
-            text="Add Product"
-            onClick={() => navigate("/add-product")}
-          />
-        ) : null}
-
-        <LargeButton
-          icon="🔄"
-          text="Update Status"
-          onClick={() => navigate("/update-status")}
-          tone="secondary"
-        />
-
-        <LargeButton
-          icon="🔍"
-          text="Track Product"
-          onClick={() => navigate("/track")}
-          tone="secondary"
-        />
-
-        {user?.role === "Farmer" ? (
-          <LargeButton
-            icon="🚜"
-            text="My Farm Profile"
-            onClick={() => navigate("/farmer-profile")}
+            icon="🔄"
+            text="Update Status"
+            onClick={() => navigate("/update-status")}
             tone="secondary"
           />
-        ) : null}
 
-        {user?.role === "Retailer" ? (
           <LargeButton
-            icon="🧑‍🌾"
-            text="Discover Farmers"
-            onClick={() => navigate("/discover-farmers")}
+            icon="🔍"
+            text="Track Product"
+            onClick={() => navigate("/track")}
             tone="secondary"
           />
-        ) : null}
 
-        <LargeButton
-          icon="💬"
-          text="Requests Inbox"
-          onClick={() => navigate("/requests")}
-          tone="secondary"
-        />
-      </div>
+          {isFarmer ? (
+            <LargeButton
+              icon="🚜"
+              text="My Farm Profile"
+              onClick={() => navigate("/farmer-profile")}
+              tone="secondary"
+            />
+          ) : null}
+
+          {isRetailer ? (
+            <LargeButton
+              icon="🧑‍🌾"
+              text="Discover Farmers"
+              onClick={() => navigate("/discover-farmers")}
+              tone="secondary"
+            />
+          ) : null}
+
+          <LargeButton
+            icon="💬"
+            text="Requests Inbox"
+            onClick={() => navigate("/requests")}
+            tone="secondary"
+          />
+        </div>
+      </section>
 
       {user?.role === "Farmer" ? (
         <MagicCard
