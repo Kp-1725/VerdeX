@@ -10,6 +10,7 @@ import {
   fetchMlPriceForecast,
   fetchNextProductId,
 } from "../utils/api";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function formatPriceInput(value) {
   const parsed = Number(value);
@@ -30,6 +31,7 @@ function convertPerQuintalToPerKg(value) {
 }
 
 function AddProductPage() {
+  const { tr } = useLanguage();
   const [name, setName] = useState("");
   const [productId, setProductId] = useState("");
   const [farmerSellPrice, setFarmerSellPrice] = useState("");
@@ -81,12 +83,12 @@ function AddProductPage() {
       const data = await fetchNextProductId();
       const nextId = Number(data?.nextProductId);
       if (!Number.isInteger(nextId) || nextId <= 0) {
-        throw new Error("Invalid product ID generated.");
+        throw new Error(tr("Invalid product ID generated."));
       }
 
       setProductId(String(nextId));
     } catch (err) {
-      setError(toFriendlyError(err, "Could not auto-generate product ID."));
+      setError(toFriendlyError(err, tr("Could not auto-generate product ID.")));
     } finally {
       setIdLoading(false);
     }
@@ -101,7 +103,7 @@ function AddProductPage() {
     setError("");
 
     if (!String(name || "").trim()) {
-      setError("Enter product name first to get recommendation.");
+      setError(tr("Enter product name first to get recommendation."));
       return;
     }
 
@@ -116,18 +118,18 @@ function AddProductPage() {
         result?.recommendation?.recommendationPriceInrPerQuintal,
       );
       if (!Number.isFinite(recommended) || recommended <= 0) {
-        throw new Error("Invalid recommendation received.");
+        throw new Error(tr("Invalid recommendation received."));
       }
 
       setFarmerSellPrice(formatPriceInput(recommended));
       setPriceRecommendation(result?.recommendation || null);
-      setMessage("Government price recommendation applied.");
+      setMessage(tr("Government price recommendation applied."));
     } catch (err) {
       setPriceRecommendation(null);
       setError(
         toFriendlyError(
           err,
-          "Could not fetch government price recommendation.",
+          tr("Could not fetch government price recommendation."),
         ),
       );
     } finally {
@@ -140,7 +142,7 @@ function AddProductPage() {
     setError("");
 
     if (!String(name || "").trim()) {
-      setError("Enter product name first to run ML forecast.");
+      setError(tr("Enter product name first to run ML forecast."));
       return;
     }
 
@@ -157,14 +159,14 @@ function AddProductPage() {
         ? forecast.predictions
         : [];
       if (!predictions.length) {
-        throw new Error("No prediction series returned.");
+        throw new Error(tr("No prediction series returned."));
       }
 
       setMlForecast(forecast);
-      setMessage("ML forecast loaded.");
+      setMessage(tr("ML forecast loaded."));
     } catch (err) {
       setMlForecast(null);
-      setError(toFriendlyError(err, "Could not fetch ML price forecast."));
+      setError(toFriendlyError(err, tr("Could not fetch ML price forecast.")));
     } finally {
       setMlLoading(false);
     }
@@ -177,7 +179,7 @@ function AddProductPage() {
 
     try {
       if (!name || !productId || !farmerSellPrice) {
-        throw new Error("Please enter product name, ID, and farmer price.");
+        throw new Error(tr("Please enter product name, ID, and farmer price."));
       }
 
       const chainProof = await addProductOnChain(productId, name);
@@ -193,7 +195,7 @@ function AddProductPage() {
         result?.product?.qrUrl ||
           `${window.location.origin}/product/${productId}`,
       );
-      setMessage("Saved Successfully ✅");
+      setMessage(tr("Saved Successfully ✅"));
       setName("");
       setFarmerSellPrice("");
       setMlForecast(null);
@@ -201,13 +203,15 @@ function AddProductPage() {
     } catch (err) {
       const friendly = toFriendlyError(
         err,
-        "Could not save product. Please try again.",
+        tr("Could not save product. Please try again."),
       );
 
       if (friendly === "Product ID already exists.") {
         await assignNextProductId();
         setError(
-          "Product ID collision detected. A new ID was generated. Please save again.",
+          tr(
+            "Product ID collision detected. A new ID was generated. Please save again.",
+          ),
         );
       } else {
         setError(friendly);
@@ -228,34 +232,39 @@ function AddProductPage() {
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Product Name
+            {tr("Product Name")}
           </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="For example: Organic Rice"
+            placeholder={tr("For example: Organic Rice")}
           />
         </div>
 
         <div className="rounded-2xl border border-[#d6e3be] bg-[#f7fbef] p-3">
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-[#315b35]">
-              Govt Price Recommendation
+              {tr("Govt Price Recommendation")}
             </p>
             <span
               className="cursor-help rounded-full border border-[#c8d8af] bg-white px-2 py-0.5 text-[10px] font-bold text-[#4f664a]"
-              title="Government mandi rates are usually published as INR per quintal, where 1 quintal = 100 kg."
+              title={tr(
+                "Government mandi rates are usually published as INR per quintal, where 1 quintal = 100 kg.",
+              )}
             >
-              UNIT INFO
+              {tr("UNIT INFO")}
             </span>
           </div>
           <p className="mt-1 text-xs text-[#597252]">
-            Uses govt mandi data when available, with prototype fallback for
-            demo reliability.
+            {tr(
+              "Uses govt mandi data when available, with prototype fallback for demo reliability.",
+            )}
           </p>
           <p className="mt-1 text-[11px] text-[#5d7557]">
-            Unit note: Recommendation values are INR per quintal (100 kg).
+            {tr(
+              "Unit note: Recommendation values are INR per quintal (100 kg).",
+            )}
           </p>
 
           <div className="mt-3 space-y-2">
@@ -263,7 +272,7 @@ function AddProductPage() {
               value={stateInput}
               onChange={(e) => setStateInput(e.target.value)}
               className="w-full rounded-xl border border-[#cddab5] bg-white px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-              placeholder="State (optional), for example: Karnataka"
+              placeholder={tr("State (optional), for example: Karnataka")}
             />
             <button
               type="button"
@@ -271,39 +280,42 @@ function AddProductPage() {
               disabled={loading || priceLoading}
               className="w-full rounded-xl border border-[#b8cf9e] bg-[#e9f5d9] px-3 py-2 text-sm font-bold text-[#2e6034] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {priceLoading ? "Fetching Govt Price..." : "Get Recommendation"}
+              {priceLoading
+                ? tr("Fetching Govt Price...")
+                : tr("Get Recommendation")}
             </button>
           </div>
 
           {priceRecommendation ? (
             <div className="mt-3 rounded-xl border border-[#d1dfbb] bg-white p-3 text-xs text-[#4f664a]">
               <p className="font-semibold text-[#2f5733]">
-                Suggested: INR{" "}
+                {tr("Suggested")} : INR{" "}
                 {priceRecommendation.recommendationPriceInrPerQuintal} / quintal
               </p>
               <p className="mt-1">
-                Approx per-kg: INR {recommendedPricePerKg ?? "-"} / kg
+                {tr("Approx per-kg")}: INR {recommendedPricePerKg ?? "-"} / kg
               </p>
               <p className="mt-1">
-                Avg range:{" "}
+                {tr("Avg range")}:{" "}
                 {priceRecommendation.minPriceAverageInrPerQuintal ?? "-"} to{" "}
                 {priceRecommendation.maxPriceAverageInrPerQuintal ?? "-"}
               </p>
               <p className="mt-1">
-                Source: {priceRecommendation.source?.name || "Govt dataset"}
+                {tr("Source")}:{" "}
+                {priceRecommendation.source?.name || tr("Govt dataset")}
               </p>
               <button
                 type="button"
                 onClick={() => {
                   if (recommendedPricePerKg) {
                     setFarmerSellPrice(formatPriceInput(recommendedPricePerKg));
-                    setMessage("Per-kg converted recommendation applied.");
+                    setMessage(tr("Per-kg converted recommendation applied."));
                     setError("");
                   }
                 }}
                 className="mt-2 rounded-lg border border-[#c6d8ad] bg-[#eff7e4] px-2 py-1 text-[11px] font-semibold text-[#335a38]"
               >
-                Use per-kg value in sell price
+                {tr("Use per-kg value in sell price")}
               </button>
             </div>
           ) : null}
@@ -311,14 +323,15 @@ function AddProductPage() {
 
         <div className="rounded-2xl border border-[#d6e3be] bg-[#f7fbef] p-3">
           <p className="text-sm font-semibold text-[#315b35]">
-            ML Price Forecast (7 Days)
+            {tr("ML Price Forecast (7 Days)")}
           </p>
           <p className="mt-1 text-xs text-[#597252]">
-            Uses the team Random Forest model service, with prototype fallback
-            when the ML API is offline.
+            {tr(
+              "Uses the team Random Forest model service, with prototype fallback when the ML API is offline.",
+            )}
           </p>
           <p className="mt-1 text-[11px] text-[#5d7557]">
-            Unit note: ML forecast values are INR per kg.
+            {tr("Unit note: ML forecast values are INR per kg.")}
           </p>
 
           <button
@@ -327,23 +340,25 @@ function AddProductPage() {
             disabled={loading || mlLoading}
             className="mt-3 w-full rounded-xl border border-[#b8cf9e] bg-[#e9f5d9] px-3 py-2 text-sm font-bold text-[#2e6034] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {mlLoading ? "Running Forecast..." : "Get ML Forecast"}
+            {mlLoading ? tr("Running Forecast...") : tr("Get ML Forecast")}
           </button>
 
           {mlForecast ? (
             <div className="mt-3 rounded-xl border border-[#d1dfbb] bg-white p-3 text-xs text-[#4f664a]">
               <p className="font-semibold text-[#2f5733]">
-                Day 1 prediction: INR {mlFirstPrediction?.predictedPrice ?? "-"}{" "}
-                / kg
+                {tr("Day 1 prediction")}: INR{" "}
+                {mlFirstPrediction?.predictedPrice ?? "-"} / kg
               </p>
               <p className="mt-1">
-                Range: INR {mlFirstPrediction?.lowerBound ?? "-"} -{" "}
+                {tr("Range")}: INR {mlFirstPrediction?.lowerBound ?? "-"} -{" "}
                 {mlFirstPrediction?.upperBound ?? "-"} / kg
               </p>
               <p className="mt-1">
-                Source: {mlForecast?.source?.name || "ML model"}
+                {tr("Source")}: {mlForecast?.source?.name || tr("ML model")}
               </p>
-              <p className="mt-1">Unit: {mlForecast?.unit || "INR/kg"}</p>
+              <p className="mt-1">
+                {tr("Unit")}: {mlForecast?.unit || "INR/kg"}
+              </p>
 
               <div className="mt-2 space-y-1 rounded-lg border border-[#d4e1c0] bg-[#f8fcf1] p-2">
                 {(mlForecast?.predictions || []).slice(0, 3).map((item) => (
@@ -360,13 +375,13 @@ function AddProductPage() {
                     setFarmerSellPrice(
                       formatPriceInput(mlFirstPrediction.predictedPrice),
                     );
-                    setMessage("ML day-1 predicted price applied.");
+                    setMessage(tr("ML day-1 predicted price applied."));
                     setError("");
                   }
                 }}
                 className="mt-2 rounded-lg border border-[#c6d8ad] bg-[#eff7e4] px-2 py-1 text-[11px] font-semibold text-[#335a38]"
               >
-                Use ML day-1 price (INR/kg)
+                {tr("Use ML day-1 price (INR/kg)")}
               </button>
             </div>
           ) : null}
@@ -375,7 +390,7 @@ function AddProductPage() {
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
             <label className="block text-sm font-semibold text-[#375138]">
-              Product ID (Auto)
+              {tr("Product ID (Auto)")}
             </label>
             <button
               type="button"
@@ -383,20 +398,20 @@ function AddProductPage() {
               disabled={idLoading || loading}
               className="rounded-full border border-[#bcd2a5] bg-[#eef7e1] px-3 py-1 text-xs font-bold text-[#2d5d34] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {idLoading ? "Generating..." : "Refresh ID"}
+              {idLoading ? tr("Generating...") : tr("Refresh ID")}
             </button>
           </div>
           <input
             value={productId}
             readOnly
             className="w-full rounded-2xl border border-[#cddab5] bg-[#f3fae8] px-4 py-4 text-lg outline-none"
-            placeholder="Auto-generated"
+            placeholder={tr("Auto-generated")}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Farmer Sell Price (INR)
+            {tr("Farmer Sell Price (INR)")}
           </label>
           <input
             value={farmerSellPrice}
@@ -404,13 +419,13 @@ function AddProductPage() {
               setFarmerSellPrice(e.target.value.replace(/[^0-9.]/g, ""))
             }
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="For example: 120"
+            placeholder={tr("For example: 120")}
           />
         </div>
 
         <LargeButton
           icon="💾"
-          text={loading ? "Saving..." : "Save"}
+          text={loading ? tr("Saving...") : tr("Save")}
           onClick={onSave}
           disabled={loading}
         />
@@ -421,7 +436,7 @@ function AddProductPage() {
         {(qrUrl || fallbackQrUrl) && message ? (
           <div className="rounded-2xl border border-[#d6e3be] bg-[#f8fbef] p-4 text-center">
             <p className="mb-3 text-sm font-semibold text-[#41593d]">
-              QR code for product page
+              {tr("QR code for product page")}
             </p>
             <div className="mx-auto w-fit rounded-xl bg-white p-3">
               <QRCodeCanvas value={qrUrl || fallbackQrUrl} size={140} />

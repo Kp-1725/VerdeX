@@ -7,10 +7,12 @@ import { registerUser } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
 import { useAuth } from "../hooks/useAuth";
 import { ROLES } from "../utils/constants";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function RegisterPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { tr } = useLanguage();
 
   const [form, setForm] = useState({
     name: "",
@@ -31,10 +33,12 @@ function RegisterPage() {
     try {
       const data = await registerUser(form);
       login({ token: data.token, user: data.user });
-      setMessage("Registration successful ✅");
+      setMessage(tr("Registration successful ✅"));
       navigate("/home");
     } catch (err) {
-      setError(toFriendlyError(err, "Could not register. Please try again."));
+      setError(
+        toFriendlyError(err, tr("Could not register. Please try again.")),
+      );
     } finally {
       setLoading(false);
     }
@@ -48,7 +52,7 @@ function RegisterPage() {
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Name
+            {tr("Name")}
           </label>
           <input
             value={form.name}
@@ -57,14 +61,14 @@ function RegisterPage() {
             }
             autoComplete="name"
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="Enter name"
+            placeholder={tr("Enter name")}
             required
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Role
+            {tr("Role")}
           </label>
           <select
             value={form.role}
@@ -73,14 +77,14 @@ function RegisterPage() {
             }
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
           >
-            <option value={ROLES.FARMER}>Farmer</option>
-            <option value={ROLES.RETAILER}>Retailer</option>
+            <option value={ROLES.FARMER}>{tr("Farmer")}</option>
+            <option value={ROLES.RETAILER}>{tr("Retailer")}</option>
           </select>
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Phone or Email
+            {tr("Phone or Email")}
           </label>
           <input
             value={form.identifier}
@@ -89,14 +93,14 @@ function RegisterPage() {
             }
             autoComplete="username"
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="Enter phone or email"
+            placeholder={tr("Enter phone or email")}
             required
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Password
+            {tr("Password")}
           </label>
           <input
             type="password"
@@ -106,13 +110,13 @@ function RegisterPage() {
             }
             autoComplete="new-password"
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="Create password"
+            placeholder={tr("Create password")}
             required
           />
         </div>
 
         <LargeButton
-          text={loading ? "Please wait..." : "Register"}
+          text={loading ? tr("Please wait...") : tr("Register")}
           icon="📝"
           type="submit"
           disabled={loading}
@@ -123,9 +127,9 @@ function RegisterPage() {
       <MessageBar message={error} type="error" />
 
       <p className="text-sm text-[#48604a]">
-        Already have an account?{" "}
+        {tr("Already have an account?")}{" "}
         <Link className="font-bold text-[#1f5d2f]" to="/login">
-          Login
+          {tr("Login")}
         </Link>
       </p>
     </MobileContainer>

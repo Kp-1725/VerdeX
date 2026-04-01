@@ -1,8 +1,12 @@
+import { useLanguage } from "../hooks/LanguageContext";
+
 function TimelineList({ stages }) {
+  const { tr } = useLanguage();
+
   if (!stages?.length) {
     return (
       <div className="rounded-xl border border-dashed border-[#c8d7b1] bg-[#f8fbf0] px-4 py-4 text-sm text-[#5c6b53]">
-        No updates yet.
+        {tr("No updates yet.")}
       </div>
     );
   }
@@ -15,7 +19,7 @@ function TimelineList({ stages }) {
           className="rounded-2xl border border-[#d6e3be] bg-[#f7fbe8] px-4 py-3"
         >
           <p className="text-base font-bold text-[#2b4930]">
-            {index + 1}. {item.stage}
+            {index + 1}. {tr(item.stage)}
           </p>
           {item.time ? (
             <p className="text-xs text-[#61725a]">{item.time}</p>
@@ -23,7 +27,7 @@ function TimelineList({ stages }) {
 
           {item.chainProof ? (
             <div className="mt-2 rounded-xl border border-[#d0debb] bg-[#f1f8e3] px-3 py-2 text-xs text-[#355738]">
-              <p className="font-bold">On-chain proof</p>
+              <p className="font-bold">{tr("On-chain proof")}</p>
               <p className="break-all">Tx: {item.chainProof.txHash}</p>
               <p>
                 Block: {item.chainProof.blockNumber} | Chain:{" "}

@@ -7,9 +7,11 @@ import StageSelector from "../components/StageSelector";
 import { addStageOnChain, toFriendlyError } from "../utils/blockchain";
 import { addProductStageMetadata } from "../utils/api";
 import { useAuth } from "../hooks/useAuth";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function UpdateStatusPage() {
   const { user } = useAuth();
+  const { tr } = useLanguage();
   const [searchParams] = useSearchParams();
   const [productId, setProductId] = useState("");
   const [selectedStage, setSelectedStage] = useState("");
@@ -32,7 +34,7 @@ function UpdateStatusPage() {
 
     try {
       if (!productId || !selectedStage) {
-        throw new Error("Please enter product ID and choose a status.");
+        throw new Error(tr("Please enter product ID and choose a status."));
       }
 
       const chainProof = await addStageOnChain(productId, selectedStage);
@@ -46,10 +48,10 @@ function UpdateStatusPage() {
       }
 
       await addProductStageMetadata(productId, payload);
-      setMessage("Updated ✅");
+      setMessage(tr("Updated ✅"));
     } catch (err) {
       setError(
-        toFriendlyError(err, "Could not update status. Please try again."),
+        toFriendlyError(err, tr("Could not update status. Please try again.")),
       );
     } finally {
       setLoading(false);
@@ -67,7 +69,7 @@ function UpdateStatusPage() {
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Product ID
+            {tr("Product ID")}
           </label>
           <input
             value={productId}
@@ -75,7 +77,7 @@ function UpdateStatusPage() {
               setProductId(e.target.value.replace(/[^0-9]/g, ""))
             }
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="Enter product ID"
+            placeholder={tr("Enter product ID")}
           />
         </div>
 
@@ -87,7 +89,7 @@ function UpdateStatusPage() {
         {user?.role === "Retailer" ? (
           <div>
             <label className="mb-1 block text-sm font-semibold text-[#375138]">
-              Retail Price (INR)
+              {tr("Retail Price (INR)")}
             </label>
             <input
               value={retailPrice}
@@ -95,17 +97,17 @@ function UpdateStatusPage() {
                 setRetailPrice(e.target.value.replace(/[^0-9.]/g, ""))
               }
               className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-              placeholder="For example: 180"
+              placeholder={tr("For example: 180")}
             />
             <p className="mt-1 text-xs text-[#61725a]">
-              Retailers can set selling price to consumers.
+              {tr("Retailers can set selling price to consumers.")}
             </p>
           </div>
         ) : null}
 
         <LargeButton
           icon="🔄"
-          text={loading ? "Updating..." : "Update"}
+          text={loading ? tr("Updating...") : tr("Update")}
           onClick={onUpdate}
           disabled={loading}
         />

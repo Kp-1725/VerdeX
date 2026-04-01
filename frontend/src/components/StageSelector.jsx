@@ -1,6 +1,9 @@
 import { STAGE_OPTIONS } from "../utils/constants";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function StageSelector({ selectedStage, onSelect }) {
+  const { tr } = useLanguage();
+
   return (
     <div className="grid grid-cols-2 gap-3">
       {STAGE_OPTIONS.map((stage) => {
@@ -27,7 +30,7 @@ function StageSelector({ selectedStage, onSelect }) {
             }`}
           >
             <div className="text-xl">{emoji}</div>
-            <div className="mt-1 text-sm">{stage}</div>
+            <div className="mt-1 text-sm">{tr(stage)}</div>
           </button>
         );
       })}

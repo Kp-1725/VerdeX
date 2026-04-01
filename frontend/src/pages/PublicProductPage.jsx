@@ -6,9 +6,11 @@ import TimelineList from "../components/TimelineList";
 import { getProductMetadata } from "../utils/api";
 import { getHistoryFromChain, toFriendlyError } from "../utils/blockchain";
 import { useAuth } from "../hooks/useAuth";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function PublicProductPage() {
   const { isLoggedIn } = useAuth();
+  const { tr } = useLanguage();
   const { id } = useParams();
   const [productName, setProductName] = useState("");
   const [farmerSellPrice, setFarmerSellPrice] = useState(null);
@@ -89,12 +91,16 @@ function PublicProductPage() {
           if (isAuditMatch) {
             setAuditType("success");
             setAuditMessage(
-              "Audit check passed: database stage log matches on-chain history.",
+              tr(
+                "Audit check passed: database stage log matches on-chain history.",
+              ),
             );
           } else {
             setAuditType("error");
             setAuditMessage(
-              "Audit warning: database stage log does not fully match on-chain history.",
+              tr(
+                "Audit warning: database stage log does not fully match on-chain history.",
+              ),
             );
           }
 
@@ -105,12 +111,16 @@ function PublicProductPage() {
           setTimeline(chainStages.map((stage) => ({ stage })));
           setAuditType("info");
           setAuditMessage(
-            "Showing blockchain history only because metadata service is unavailable.",
+            tr(
+              "Showing blockchain history only because metadata service is unavailable.",
+            ),
           );
         } else if (product && historyResult.status === "rejected") {
           setAuditType("info");
           setAuditMessage(
-            "Metadata loaded. Blockchain verification is temporarily unavailable.",
+            tr(
+              "Metadata loaded. Blockchain verification is temporarily unavailable.",
+            ),
           );
         }
 
@@ -118,7 +128,7 @@ function PublicProductPage() {
           throw metadataResult.reason || historyResult.reason;
         }
       } catch (err) {
-        setError(toFriendlyError(err, "Could not fetch product journey."));
+        setError(toFriendlyError(err, tr("Could not fetch product journey.")));
       } finally {
         setLoading(false);
       }
@@ -130,33 +140,34 @@ function PublicProductPage() {
   return (
     <MobileContainer
       title="Product Journey"
-      subtitle={`Product ID: ${id}`}
+      subtitle={`${tr("Product ID")}: ${id}`}
       showBack
       backTo={isLoggedIn ? "/home" : "/login"}
       showNav={isLoggedIn}
     >
       {productName ? (
         <div className="rounded-xl border border-[#d4e0bf] bg-[#f6faeb] px-4 py-3">
-          <p className="text-xs text-[#5f6f56]">Product Name</p>
+          <p className="text-xs text-[#5f6f56]">{tr("Product Name")}</p>
           <p className="text-lg font-bold text-[#2e4a31]">{productName}</p>
         </div>
       ) : null}
 
       {farmerSellPrice !== null ? (
         <div className="rounded-xl border border-[#d4e0bf] bg-[#f6faeb] px-4 py-3 text-sm text-[#355738]">
-          <p className="font-bold text-[#2e4a31]">Price Transparency</p>
+          <p className="font-bold text-[#2e4a31]">{tr("Price Transparency")}</p>
           <p className="mt-1">
-            Farmer sell price: {pricingCurrency} {farmerSellPrice.toFixed(2)}
+            {tr("Farmer sell price")}: {pricingCurrency}{" "}
+            {farmerSellPrice.toFixed(2)}
           </p>
           <p>
-            Retail price:{" "}
+            {tr("Retail price")}:{" "}
             {retailPrice !== null
               ? `${pricingCurrency} ${retailPrice.toFixed(2)}`
-              : "Not updated yet"}
+              : tr("Not updated yet")}
           </p>
           {retailPrice !== null ? (
             <p>
-              Margin: {pricingCurrency}{" "}
+              {tr("Margin")}: {pricingCurrency}{" "}
               {(retailPrice - farmerSellPrice).toFixed(2)}
             </p>
           ) : null}
@@ -165,24 +176,37 @@ function PublicProductPage() {
 
       {isArchived ? (
         <MessageBar
-          message="This product record is archived and preserved for traceability audit."
+          message={tr(
+            "This product record is archived and preserved for traceability audit.",
+          )}
           type="info"
         />
       ) : null}
 
       {creationProof ? (
         <div className="rounded-xl border border-[#d4e0bf] bg-[#f6faeb] px-4 py-3 text-xs text-[#355738]">
-          <p className="font-bold text-[#2e4a31]">Creation transaction proof</p>
-          <p className="mt-1 break-all">Tx: {creationProof.txHash}</p>
-          <p>
-            Block: {creationProof.blockNumber} | Chain: {creationProof.chainId}
+          <p className="font-bold text-[#2e4a31]">
+            {tr("Creation transaction proof")}
           </p>
-          <p className="break-all">Contract: {creationProof.contractAddress}</p>
-          <p className="break-all">Wallet: {creationProof.walletAddress}</p>
+          <p className="mt-1 break-all">
+            {tr("Tx")}: {creationProof.txHash}
+          </p>
+          <p>
+            {tr("Block")}: {creationProof.blockNumber} | {tr("Chain")}:{" "}
+            {creationProof.chainId}
+          </p>
+          <p className="break-all">
+            {tr("Contract")}: {creationProof.contractAddress}
+          </p>
+          <p className="break-all">
+            {tr("Wallet")}: {creationProof.walletAddress}
+          </p>
         </div>
       ) : null}
 
-      {loading ? <MessageBar message="Loading journey..." type="info" /> : null}
+      {loading ? (
+        <MessageBar message={tr("Loading journey...")} type="info" />
+      ) : null}
       {error ? <MessageBar message={error} type="error" /> : null}
       {!loading && !error && auditMessage ? (
         <MessageBar message={auditMessage} type={auditType} />
@@ -194,7 +218,7 @@ function PublicProductPage() {
           to="/login"
           className="inline-block rounded-xl bg-[#edf7df] px-4 py-2 text-sm font-bold text-[#1f5d2f]"
         >
-          Team Login
+          {tr("Team Login")}
         </Link>
       ) : null}
     </MobileContainer>

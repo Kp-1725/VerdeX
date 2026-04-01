@@ -5,6 +5,7 @@ import MessageBar from "../components/MessageBar";
 import { updateMyFarmerProfile } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
 import { useAuth } from "../hooks/useAuth";
+import { useLanguage } from "../hooks/LanguageContext";
 
 const FIELD_LIMITS = {
   farmName: 80,
@@ -20,6 +21,7 @@ const FIELD_LIMITS = {
 
 function FarmerProfilePage() {
   const { user } = useAuth();
+  const { tr } = useLanguage();
 
   const initialProfile = useMemo(
     () => ({
@@ -82,9 +84,9 @@ function FarmerProfilePage() {
         },
       });
 
-      setMessage("Farmer profile saved ✅");
+      setMessage(tr("Farmer profile saved ✅"));
     } catch (err) {
-      setError(toFriendlyError(err, "Could not save profile."));
+      setError(toFriendlyError(err, tr("Could not save profile.")));
     } finally {
       setLoading(false);
     }
@@ -101,34 +103,34 @@ function FarmerProfilePage() {
       <div className="space-y-3">
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Farm Name
+            {tr("Farm Name")}
           </label>
           <input
             value={form.farmName}
             onChange={(e) => onChange("farmName", e.target.value)}
             maxLength={FIELD_LIMITS.farmName}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-            placeholder="Green Valley Farm"
+            placeholder={tr("Green Valley Farm")}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Location
+            {tr("Location")}
           </label>
           <input
             value={form.location}
             onChange={(e) => onChange("location", e.target.value)}
             maxLength={FIELD_LIMITS.location}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-            placeholder="Village, District"
+            placeholder={tr("Village, District")}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-sm font-semibold text-[#375138]">
-              Acres
+              {tr("Acres")}
             </label>
             <input
               value={form.acreage}
@@ -141,79 +143,79 @@ function FarmerProfilePage() {
               inputMode="decimal"
               maxLength={FIELD_LIMITS.acreage}
               className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-              placeholder="12"
+              placeholder={tr("12")}
             />
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-semibold text-[#375138]">
-              Preferred Contact
+              {tr("Preferred Contact")}
             </label>
             <input
               value={form.preferredContact}
               onChange={(e) => onChange("preferredContact", e.target.value)}
               maxLength={FIELD_LIMITS.preferredContact}
               className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-              placeholder="Phone / Chat"
+              placeholder={tr("Phone / Chat")}
             />
           </div>
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Primary Crops
+            {tr("Primary Crops")}
           </label>
           <input
             value={form.primaryCrops}
             onChange={(e) => onChange("primaryCrops", e.target.value)}
             maxLength={FIELD_LIMITS.primaryCrops}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-            placeholder="Rice, Wheat, Tomato"
+            placeholder={tr("Rice, Wheat, Tomato")}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Farming Method
+            {tr("Farming Method")}
           </label>
           <input
             value={form.farmingMethod}
             onChange={(e) => onChange("farmingMethod", e.target.value)}
             maxLength={FIELD_LIMITS.farmingMethod}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-            placeholder="Organic / Natural / Conventional"
+            placeholder={tr("Organic / Natural / Conventional")}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Certifications
+            {tr("Certifications")}
           </label>
           <input
             value={form.certifications}
             onChange={(e) => onChange("certifications", e.target.value)}
             maxLength={FIELD_LIMITS.certifications}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-            placeholder="Organic India, FSSAI"
+            placeholder={tr("Organic India, FSSAI")}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Phone
+            {tr("Phone")}
           </label>
           <input
             value={form.phone}
             onChange={(e) => onChange("phone", e.target.value)}
             maxLength={FIELD_LIMITS.phone}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-            placeholder="Contact number"
+            placeholder={tr("Contact number")}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            About Farm
+            {tr("About Farm")}
           </label>
           <textarea
             value={form.bio}
@@ -221,13 +223,15 @@ function FarmerProfilePage() {
             maxLength={FIELD_LIMITS.bio}
             rows={4}
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-3 text-base outline-none focus:border-[#2f7d35]"
-            placeholder="Tell retailers about your farm quality and strengths"
+            placeholder={tr(
+              "Tell retailers about your farm quality and strengths",
+            )}
           />
         </div>
 
         <LargeButton
           icon="💾"
-          text={loading ? "Saving..." : "Save Profile"}
+          text={loading ? tr("Saving...") : tr("Save Profile")}
           onClick={onSave}
           disabled={loading}
         />

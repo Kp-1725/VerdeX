@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useDeviceType } from "../hooks/useDeviceType";
 import { fetchShelfProducts } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function navClass(isDesktop) {
   return ({ isActive }) =>
@@ -16,6 +17,7 @@ function navClass(isDesktop) {
 function BottomNav() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { t, tr } = useLanguage();
   const { isDesktop } = useDeviceType();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [shelfProducts, setShelfProducts] = useState([]);
@@ -76,7 +78,7 @@ function BottomNav() {
           <li>
             <NavLink to="/home" className={navClass(isDesktop)}>
               <span className={iconClass}>🏠</span>
-              Home
+              {t("nav.home", "Home")}
             </NavLink>
           </li>
 
@@ -84,7 +86,7 @@ function BottomNav() {
             {user?.role === "Farmer" ? (
               <NavLink to="/add-product" className={navClass(isDesktop)}>
                 <span className={iconClass}>➕</span>
-                Add
+                {t("nav.add", "Add")}
               </NavLink>
             ) : (
               <button
@@ -103,10 +105,10 @@ function BottomNav() {
                   isMenuOpen ? "bg-[#d6f2c9] text-[#1f5d2f]" : "text-[#4d6047]"
                 }`}
                 aria-expanded={isMenuOpen}
-                aria-label="Open menu"
+                aria-label={tr("Open menu")}
               >
                 <span className={iconClass}>🧺</span>
-                Menu
+                {t("nav.menu", "Menu")}
               </button>
             )}
           </li>
@@ -114,7 +116,7 @@ function BottomNav() {
           <li>
             <NavLink to="/track" className={navClass(isDesktop)}>
               <span className={iconClass}>🔍</span>
-              Track
+              {t("nav.track", "Track")}
             </NavLink>
           </li>
         </ul>
@@ -131,19 +133,21 @@ function BottomNav() {
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="Quick menu"
+            aria-label={t("common.quickMenu", "Quick Menu")}
           >
-            <p className="mb-3 text-sm font-bold text-[#2f4a33]">Quick Menu</p>
+            <p className="mb-3 text-sm font-bold text-[#2f4a33]">
+              {t("common.quickMenu", "Quick Menu")}
+            </p>
 
             {user?.role === "Retailer" ? (
               <div className="mb-3 rounded-xl border border-[#d2e1bc] bg-[#f4fae8] p-3">
                 <p className="text-xs font-bold uppercase tracking-wide text-[#496346]">
-                  Shelf Products
+                  {tr("Shelf Products")}
                 </p>
 
                 {loadingShelf ? (
                   <p className="mt-2 text-sm text-[#5c7457]">
-                    Loading your shelf...
+                    {tr("Loading your shelf...")}
                   </p>
                 ) : null}
 
@@ -155,7 +159,7 @@ function BottomNav() {
 
                 {!loadingShelf && !shelfError && shelfProducts.length === 0 ? (
                   <p className="mt-2 text-sm text-[#5c7457]">
-                    No priced products on your shelf yet.
+                    {tr("No priced products on your shelf yet.")}
                   </p>
                 ) : null}
 
@@ -189,35 +193,35 @@ function BottomNav() {
                 onClick={() => goTo("/update-status")}
                 className="rounded-xl border border-[#cde0b6] bg-white px-3 py-3 text-sm font-bold text-[#2b5232]"
               >
-                🔄 Update Status
+                🔄 {tr("Update Status")}
               </button>
               <button
                 type="button"
                 onClick={() => goTo("/track")}
                 className="rounded-xl border border-[#cde0b6] bg-white px-3 py-3 text-sm font-bold text-[#2b5232]"
               >
-                🔍 Track Product
+                🔍 {tr("Track Product")}
               </button>
               <button
                 type="button"
                 onClick={() => goTo("/metrics")}
                 className="rounded-xl border border-[#cde0b6] bg-white px-3 py-3 text-sm font-bold text-[#2b5232]"
               >
-                📊 Metrics
+                📊 {t("nav.metrics", "Metrics")}
               </button>
               <button
                 type="button"
                 onClick={() => goTo("/home")}
                 className="rounded-xl border border-[#cde0b6] bg-white px-3 py-3 text-sm font-bold text-[#2b5232]"
               >
-                🏠 Home
+                🏠 {t("nav.home", "Home")}
               </button>
               <button
                 type="button"
                 onClick={onLogout}
                 className="rounded-xl border border-[#f0b5a6] bg-[#fff1ea] px-3 py-3 text-sm font-bold text-[#843f28]"
               >
-                🚪 Logout
+                🚪 {t("common.logout", "Logout")}
               </button>
             </div>
 
@@ -226,7 +230,7 @@ function BottomNav() {
               onClick={closeMenu}
               className="mt-3 w-full rounded-xl bg-[#e9f4d8] px-4 py-2 text-sm font-bold text-[#2b5232]"
             >
-              Close
+              {t("common.close", "Close")}
             </button>
           </div>
         </div>

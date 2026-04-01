@@ -5,6 +5,7 @@ import { useDeviceType } from "../hooks/useDeviceType";
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 import { useAuth } from "../hooks/useAuth";
 import { fetchMyTradeRequests } from "../utils/api";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function MobileContainer({
   title,
@@ -17,6 +18,7 @@ function MobileContainer({
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoggedIn, user, logout } = useAuth();
+  const { language, setLanguage, t, tr, translateRole } = useLanguage();
   const { deviceType, isMobile, isTablet, isDesktop } = useDeviceType();
   const [requestBadgeCount, setRequestBadgeCount] = useState(0);
   const isHomeRoute = location.pathname === "/home";
@@ -28,7 +30,7 @@ function MobileContainer({
       : deviceType === "tablet"
         ? "Tablet"
         : "Desktop";
-  const activeRoleLabel = user?.role || "Member";
+  const activeRoleLabel = translateRole(user?.role || "Member");
   const focusLabel =
     user?.role === "Farmer"
       ? "Publish, update, and audit your produce flow"
@@ -54,24 +56,52 @@ function MobileContainer({
 
   const navItems = [];
   if (isLoggedIn) {
-    navItems.push({ to: "/home", label: "Home", icon: "🏠" });
-    navItems.push({ to: "/track", label: "Track", icon: "🔍" });
-    navItems.push({ to: "/metrics", label: "Metrics", icon: "📊" });
-    navItems.push({ to: "/requests", label: "Requests", icon: "💬" });
+    navItems.push({ to: "/home", label: t("nav.home", "Home"), icon: "🏠" });
+    navItems.push({ to: "/track", label: t("nav.track", "Track"), icon: "🔍" });
+    navItems.push({
+      to: "/metrics",
+      label: t("nav.metrics", "Metrics"),
+      icon: "📊",
+    });
+    navItems.push({
+      to: "/requests",
+      label: t("nav.requests", "Requests"),
+      icon: "💬",
+    });
 
     if (user?.role === "Farmer") {
-      navItems.push({ to: "/add-product", label: "Add", icon: "➕" });
-      navItems.push({ to: "/farmer-profile", label: "My Farm", icon: "🚜" });
+      navItems.push({
+        to: "/add-product",
+        label: t("nav.add", "Add"),
+        icon: "➕",
+      });
+      navItems.push({
+        to: "/farmer-profile",
+        label: t("nav.myFarm", "My Farm"),
+        icon: "🚜",
+      });
     }
 
     if (user?.role === "Retailer") {
-      navItems.push({ to: "/discover-farmers", label: "Farmers", icon: "🧑‍🌾" });
-      navItems.push({ to: "/update-status", label: "Status", icon: "🔄" });
+      navItems.push({
+        to: "/discover-farmers",
+        label: t("nav.farmers", "Farmers"),
+        icon: "🧑‍🌾",
+      });
+      navItems.push({
+        to: "/update-status",
+        label: t("nav.status", "Status"),
+        icon: "🔄",
+      });
     }
   } else {
-    navItems.push({ to: "/", label: "Home", icon: "🏠" });
-    navItems.push({ to: "/login", label: "Login", icon: "🔐" });
-    navItems.push({ to: "/register", label: "Register", icon: "📝" });
+    navItems.push({ to: "/", label: t("nav.home", "Home"), icon: "🏠" });
+    navItems.push({ to: "/login", label: t("nav.login", "Login"), icon: "🔐" });
+    navItems.push({
+      to: "/register",
+      label: t("nav.register", "Register"),
+      icon: "📝",
+    });
   }
 
   function goTo(path) {
@@ -175,30 +205,47 @@ function MobileContainer({
                 </span>
               </button>
 
-              {isLoggedIn ? (
-                <div className="justify-self-end inline-flex items-center gap-2 rounded-full border border-[#c7d9b1] bg-white/95 px-2 py-1.5">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#e5f2d5] text-sm font-black text-[#2d5a38]">
-                    {String(user?.name || "U")
-                      .charAt(0)
-                      .toUpperCase()}
+              <div className="justify-self-end inline-flex items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#c7d9b1] bg-white/95 px-2 py-1.5">
+                  <span className="text-[10px] font-bold uppercase text-[#587255]">
+                    {t("language.label", "Language")}
                   </span>
-                  <div className="text-left">
-                    <p className="text-sm font-bold leading-none text-[#2a4d35]">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-[#5b7157]">
-                      {user?.role || "Team"}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    className="rounded-full border border-[#f1d0c5] bg-transparent px-2.5 py-1.5 text-xs font-bold text-[#8f4a31] transition hover:bg-[#ffe7dc] hover:text-[#6f2f23]"
+                  <select
+                    value={language}
+                    onChange={(event) => setLanguage(event.target.value)}
+                    className="rounded-lg border border-[#c8d9b3] bg-[#f5fbe9] px-2 py-1 text-xs font-bold text-[#2d5a38] outline-none"
                   >
-                    Logout
-                  </button>
+                    <option value="en">EN</option>
+                    <option value="hi">HI</option>
+                    <option value="kn">KN</option>
+                  </select>
                 </div>
-              ) : null}
+
+                {isLoggedIn ? (
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#c7d9b1] bg-white/95 px-2 py-1.5">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#e5f2d5] text-sm font-black text-[#2d5a38]">
+                      {String(user?.name || "U")
+                        .charAt(0)
+                        .toUpperCase()}
+                    </span>
+                    <div className="text-left">
+                      <p className="text-sm font-bold leading-none text-[#2a4d35]">
+                        {user?.name || tr("User")}
+                      </p>
+                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-[#5b7157]">
+                        {translateRole(user?.role || t("common.team", "Team"))}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onLogout}
+                      className="rounded-full border border-[#f1d0c5] bg-transparent px-2.5 py-1.5 text-xs font-bold text-[#8f4a31] transition hover:bg-[#ffe7dc] hover:text-[#6f2f23]"
+                    >
+                      {t("common.logout", "Logout")}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <div
@@ -251,8 +298,27 @@ function MobileContainer({
                 onClick={onBack}
                 className="mb-3 rounded-xl border border-[#c7d6af] bg-[#e8f3d6] px-3 py-2 text-sm font-bold text-[#2a4f31]"
               >
-                ← Back
+                ← {t("common.back", "Back")}
               </button>
+            ) : null}
+
+            {!showTopNav ? (
+              <div className="mb-3 flex justify-end">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#c8d9b3] bg-white px-2 py-1.5">
+                  <span className="text-[10px] font-bold uppercase text-[#587255]">
+                    {t("language.label", "Language")}
+                  </span>
+                  <select
+                    value={language}
+                    onChange={(event) => setLanguage(event.target.value)}
+                    className="rounded-lg border border-[#c8d9b3] bg-[#f5fbe9] px-2 py-1 text-xs font-bold text-[#2d5a38] outline-none"
+                  >
+                    <option value="en">EN</option>
+                    <option value="hi">HI</option>
+                    <option value="kn">KN</option>
+                  </select>
+                </div>
+              </div>
             ) : null}
 
             <div
@@ -264,15 +330,15 @@ function MobileContainer({
             >
               <div>
                 <h1 className="font-title text-3xl leading-tight text-[#27412d]">
-                  {title}
+                  {tr(title)}
                 </h1>
                 {subtitle ? (
-                  <p className="mt-2 text-sm text-[#4b6042]">{subtitle}</p>
+                  <p className="mt-2 text-sm text-[#4b6042]">{tr(subtitle)}</p>
                 ) : null}
 
                 {showDebugDeviceTag ? (
                   <span className="mt-3 inline-flex rounded-lg border border-[#bdd0a2] bg-[#e9f5d5] px-2 py-1 text-[11px] font-bold text-[#2b5231]">
-                    Device: {deviceLabel}
+                    {t("common.device", "Device")}: {deviceLabel}
                   </span>
                 ) : null}
 

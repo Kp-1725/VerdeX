@@ -9,9 +9,11 @@ import {
 } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
 import { useAuth } from "../hooks/useAuth";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function RequestsInboxPage() {
   const { user } = useAuth();
+  const { tr, translateRole } = useLanguage();
   const [requests, setRequests] = useState([]);
   const [activeId, setActiveId] = useState("");
   const [messageText, setMessageText] = useState("");
@@ -37,7 +39,7 @@ function RequestsInboxPage() {
         setActiveId(list[0]._id);
       }
     } catch (err) {
-      setError(toFriendlyError(err, "Could not load requests."));
+      setError(toFriendlyError(err, tr("Could not load requests.")));
     } finally {
       setLoading(false);
     }
@@ -69,10 +71,10 @@ function RequestsInboxPage() {
         text: messageText,
       });
       patchRequestInState(response.request);
-      setMessage("Message sent ✅");
+      setMessage(tr("Message sent ✅"));
       setMessageText("");
     } catch (err) {
-      setError(toFriendlyError(err, "Could not send message."));
+      setError(toFriendlyError(err, tr("Could not send message.")));
     } finally {
       setSaving(false);
     }
@@ -92,9 +94,9 @@ function RequestsInboxPage() {
         status,
       });
       patchRequestInState(response.request);
-      setMessage(response.message || "Status updated ✅");
+      setMessage(response.message || tr("Status updated ✅"));
     } catch (err) {
-      setError(toFriendlyError(err, "Could not update request."));
+      setError(toFriendlyError(err, tr("Could not update request.")));
     } finally {
       setSaving(false);
     }
@@ -111,7 +113,7 @@ function RequestsInboxPage() {
       <div className="space-y-3">
         <LargeButton
           icon="🔄"
-          text={loading ? "Refreshing..." : "Refresh Requests"}
+          text={loading ? tr("Refreshing...") : tr("Refresh Requests")}
           onClick={loadRequests}
           disabled={loading}
           tone="secondary"
@@ -121,7 +123,7 @@ function RequestsInboxPage() {
         <MessageBar message={error} type="error" />
 
         {requests.length === 0 ? (
-          <p className="text-sm text-[#5c6f55]">No requests yet.</p>
+          <p className="text-sm text-[#5c6f55]">{tr("No requests yet.")}</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-2">
@@ -144,14 +146,14 @@ function RequestsInboxPage() {
                       {item.crop}
                     </p>
                     <p className="text-xs text-[#607059]">
-                      With: {counterParty} | {item.quantity} {item.unit}
+                      {tr("With")}: {counterParty} | {item.quantity} {item.unit}
                     </p>
                     <p className="text-xs text-[#607059]">
-                      Offer: {item.currency}{" "}
+                      {tr("Offer")}: {item.currency}{" "}
                       {Number(item.offeredPrice || 0).toFixed(2)}
                     </p>
                     <p className="mt-1 text-xs font-bold text-[#355938]">
-                      Status: {item.status}
+                      {tr("Status")}: {tr(item.status)}
                     </p>
                   </button>
                 );
@@ -161,20 +163,22 @@ function RequestsInboxPage() {
             {activeRequest ? (
               <div className="rounded-xl border border-[#d2e0bc] bg-[#f8fbef] p-3">
                 <p className="text-sm font-bold text-[#2f4a33]">
-                  {activeRequest.crop} request
+                  {activeRequest.crop} {tr("request")}
                 </p>
                 <p className="text-xs text-[#607059] mt-1">
-                  Quantity: {activeRequest.quantity} {activeRequest.unit} |
-                  Offer: {activeRequest.currency}{" "}
+                  {tr("Quantity")}: {activeRequest.quantity}{" "}
+                  {activeRequest.unit} | {tr("Offer")}: {activeRequest.currency}{" "}
                   {Number(activeRequest.offeredPrice || 0).toFixed(2)}
                 </p>
                 <p className="text-xs text-[#607059] mt-1">
-                  Status: {activeRequest.status}
+                  {tr("Status")}: {tr(activeRequest.status)}
                 </p>
 
                 <div className="mt-3 max-h-48 space-y-2 overflow-auto rounded-xl border border-[#d5e4bf] bg-white p-2">
                   {(activeRequest.messages || []).length === 0 ? (
-                    <p className="text-xs text-[#64745e]">No messages yet.</p>
+                    <p className="text-xs text-[#64745e]">
+                      {tr("No messages yet.")}
+                    </p>
                   ) : (
                     activeRequest.messages.map((entry, index) => (
                       <div
@@ -182,7 +186,7 @@ function RequestsInboxPage() {
                         className="rounded-lg border border-[#e2ebd2] bg-[#f7fbef] px-2 py-2"
                       >
                         <p className="text-xs font-bold text-[#2f4a33]">
-                          {entry.senderName} ({entry.senderRole})
+                          {entry.senderName} ({translateRole(entry.senderRole)})
                         </p>
                         <p className="text-xs text-[#425944]">{entry.text}</p>
                       </div>
@@ -195,12 +199,12 @@ function RequestsInboxPage() {
                   onChange={(e) => setMessageText(e.target.value)}
                   rows={3}
                   className="mt-3 w-full rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-                  placeholder="Type a message"
+                  placeholder={tr("Type a message")}
                 />
 
                 <LargeButton
                   icon="💬"
-                  text={saving ? "Sending..." : "Send Message"}
+                  text={saving ? tr("Sending...") : tr("Send Message")}
                   onClick={onSendMessage}
                   disabled={saving}
                 />
@@ -214,14 +218,14 @@ function RequestsInboxPage() {
                         onClick={() => onChangeStatus("Accepted")}
                         className="rounded-lg bg-[#dff4d4] px-3 py-2 text-xs font-bold text-[#215b2c]"
                       >
-                        Accept
+                        {tr("Accept")}
                       </button>
                       <button
                         type="button"
                         onClick={() => onChangeStatus("Rejected")}
                         className="rounded-lg bg-[#ffe7e1] px-3 py-2 text-xs font-bold text-[#893529]"
                       >
-                        Reject
+                        {tr("Reject")}
                       </button>
                     </>
                   ) : null}
@@ -233,7 +237,7 @@ function RequestsInboxPage() {
                       onClick={() => onChangeStatus("Closed")}
                       className="rounded-lg bg-[#e7eefb] px-3 py-2 text-xs font-bold text-[#30507e]"
                     >
-                      Close
+                      {tr("Close")}
                     </button>
                   ) : null}
                 </div>

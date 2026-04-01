@@ -3,6 +3,7 @@ import MobileContainer from "../components/MobileContainer";
 import MessageBar from "../components/MessageBar";
 import { fetchPlatformMetrics } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function formatShortTime(isoString) {
   const date = new Date(isoString);
@@ -24,6 +25,7 @@ function formatInr(value) {
 }
 
 function MetricsPage() {
+  const { tr } = useLanguage();
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -42,7 +44,7 @@ function MetricsPage() {
       setPulse(true);
       window.setTimeout(() => setPulse(false), 500);
     } catch (err) {
-      setError(toFriendlyError(err, "Could not load live metrics."));
+      setError(toFriendlyError(err, tr("Could not load live metrics.")));
     } finally {
       setLoading(false);
     }
@@ -112,13 +114,13 @@ function MetricsPage() {
       <div className="rounded-3xl border border-[#d3e2bf] bg-[radial-gradient(circle_at_top,_#f8fceb_0%,_#eef6df_50%,_#e6f1d6_100%)] p-4 text-[#2f4a33] shadow-[0_18px_40px_rgba(73,93,44,0.16)] sm:p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#d2e1bc] pb-3">
           <p className="text-sm font-semibold text-[#4f6d4a]">
-            National Agricultural Transparency Portal
+            {tr("National Agricultural Transparency Portal")}
           </p>
           <div className="inline-flex items-center gap-2 rounded-full border border-[#c3d9aa] bg-white/90 px-3 py-1 text-xs font-bold text-[#3f6a46]">
             <span
               className={`h-2.5 w-2.5 rounded-full ${pulse ? "bg-[#58c973]" : "bg-[#7fb76f]"}`}
             />
-            Live Sync
+            {tr("Live Sync")}
           </div>
         </div>
 
@@ -127,43 +129,45 @@ function MetricsPage() {
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-[#d4e2bf] bg-white p-4 shadow-[0_8px_18px_rgba(73,93,44,0.09)]">
             <p className="text-xs font-black uppercase tracking-wide text-[#5e7a58]">
-              Total Value Tracked
+              {tr("Total Value Tracked")}
             </p>
             <p className="mt-2 text-4xl font-black leading-none text-[#2f7d35]">
               {headline.totalValueTrackedInrLakhs.toFixed(2)}L
             </p>
             <p className="mt-2 text-xs text-[#647a5e]">
-              {headline.transactionsCount} transactions
+              {headline.transactionsCount} {tr("transactions")}
             </p>
           </div>
 
           <div className="rounded-2xl border border-[#d4e2bf] bg-white p-4 shadow-[0_8px_18px_rgba(73,93,44,0.09)]">
             <p className="text-xs font-black uppercase tracking-wide text-[#5e7a58]">
-              Fairness Rating
+              {tr("Fairness Rating")}
             </p>
             <p className="mt-2 text-4xl font-black leading-none text-[#2f7d35]">
               {headline.fairnessRatingPercent}%
             </p>
             <p className="mt-2 text-xs text-[#647a5e]">
-              Accepted vs responded requests
+              {tr("Accepted vs responded requests")}
             </p>
           </div>
 
           <div className="rounded-2xl border border-[#d4e2bf] bg-white p-4 shadow-[0_8px_18px_rgba(73,93,44,0.09)]">
             <p className="text-xs font-black uppercase tracking-wide text-[#5e7a58]">
-              Food Waste Prevented
+              {tr("Food Waste Prevented")}
             </p>
             <p className="mt-2 text-4xl font-black leading-none text-[#2f7d35]">
               {Math.round(headline.foodWastePreventedKg)}kg
             </p>
-            <p className="mt-2 text-xs text-[#647a5e]">Accepted volumes</p>
+            <p className="mt-2 text-xs text-[#647a5e]">
+              {tr("Accepted volumes")}
+            </p>
           </div>
         </div>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-2xl border border-[#d6e3be] bg-[#f7fbe9] p-4">
             <h3 className="text-2xl font-black text-[#2d4b33]">
-              Transparency Map
+              {tr("Transparency Map")}
             </h3>
             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {mapItems.map((item) => (
@@ -183,8 +187,8 @@ function MetricsPage() {
                     />
                   </div>
                   <p className="mt-2 text-xs text-[#647a5f]">
-                    {item.coveragePercent || 0}% coverage | {item.farms || 0}{" "}
-                    farms
+                    {item.coveragePercent || 0}% {tr("coverage")} |{" "}
+                    {item.farms || 0} {tr("farms")}
                   </p>
                 </div>
               ))}
@@ -193,7 +197,7 @@ function MetricsPage() {
 
           <section className="rounded-2xl border border-[#d6e3be] bg-[#f7fbe9] p-4">
             <h3 className="text-2xl font-black text-[#2d4b33]">
-              Live Ledger Stream
+              {tr("Live Ledger Stream")}
             </h3>
             <div className="mt-3 max-h-[320px] space-y-2 overflow-auto pr-1">
               {ledgerItems.map((event, index) => (
@@ -212,7 +216,7 @@ function MetricsPage() {
                           : "border-[#c7d7ea] bg-[#edf5ff] text-[#2c5784]"
                       }`}
                     >
-                      {event.type}
+                      {tr(event.type)}
                     </span>
                   </div>
                   <p className="mt-1 text-sm font-bold text-[#2f4d34]">
@@ -225,8 +229,9 @@ function MetricsPage() {
 
               {!loading && ledgerItems.length === 0 ? (
                 <p className="text-sm text-[#5d7357]">
-                  No stream activity yet. Add products or requests to populate
-                  this feed.
+                  {tr(
+                    "No stream activity yet. Add products or requests to populate this feed.",
+                  )}
                 </p>
               ) : null}
             </div>
@@ -235,29 +240,29 @@ function MetricsPage() {
 
         <section className="mt-4 rounded-2xl border border-[#d6e3be] bg-[#f7fbe9] p-4">
           <h3 className="text-sm font-black uppercase tracking-wide text-[#486947]">
-            Velocity + Totals
+            {tr("Velocity + Totals")}
           </h3>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-[#d3e2bf] bg-white p-3 text-xs text-[#5f765a]">
-              <p className="font-bold">New products (24h)</p>
+              <p className="font-bold">{tr("New products (24h)")}</p>
               <p className="mt-1 text-lg font-black text-[#2d5d34]">
                 {velocity.newProductsLast24Hours}
               </p>
             </div>
             <div className="rounded-xl border border-[#d3e2bf] bg-white p-3 text-xs text-[#5f765a]">
-              <p className="font-bold">New requests (24h)</p>
+              <p className="font-bold">{tr("New requests (24h)")}</p>
               <p className="mt-1 text-lg font-black text-[#2d5d34]">
                 {velocity.newRequestsLast24Hours}
               </p>
             </div>
             <div className="rounded-xl border border-[#d3e2bf] bg-white p-3 text-xs text-[#5f765a]">
-              <p className="font-bold">Updates (1h)</p>
+              <p className="font-bold">{tr("Updates (1h)")}</p>
               <p className="mt-1 text-lg font-black text-[#2d5d34]">
                 {velocity.updatesLastHour}
               </p>
             </div>
             <div className="rounded-xl border border-[#d3e2bf] bg-white p-3 text-xs text-[#5f765a]">
-              <p className="font-bold">Retail value (INR)</p>
+              <p className="font-bold">{tr("Retail value (INR)")}</p>
               <p className="mt-1 text-lg font-black text-[#2d5d34]">
                 {formatInr(totals.totalRetailValueInr)}
               </p>
@@ -266,35 +271,35 @@ function MetricsPage() {
 
           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <p className="rounded-lg border border-[#d3e2bf] bg-white px-3 py-2 text-xs text-[#5f7659]">
-              Users:{" "}
+              {tr("Users")}:{" "}
               <span className="font-bold text-[#2f5d36]">{totals.users}</span>
             </p>
             <p className="rounded-lg border border-[#d3e2bf] bg-white px-3 py-2 text-xs text-[#5f7659]">
-              Farmers / Retailers:{" "}
+              {tr("Farmers / Retailers")}:{" "}
               <span className="font-bold text-[#2f5d36]">
                 {totals.farmers} / {totals.retailers}
               </span>
             </p>
             <p className="rounded-lg border border-[#d3e2bf] bg-white px-3 py-2 text-xs text-[#5f7659]">
-              Products:{" "}
+              {tr("Products")}:{" "}
               <span className="font-bold text-[#2f5d36]">
                 {totals.products}
               </span>
             </p>
             <p className="rounded-lg border border-[#d3e2bf] bg-white px-3 py-2 text-xs text-[#5f7659]">
-              Active / Archived:{" "}
+              {tr("Active / Archived")}:{" "}
               <span className="font-bold text-[#2f5d36]">
                 {totals.activeProducts} / {totals.archivedProducts}
               </span>
             </p>
             <p className="rounded-lg border border-[#d3e2bf] bg-white px-3 py-2 text-xs text-[#5f7659]">
-              Pending requests:{" "}
+              {tr("Pending requests")}:{" "}
               <span className="font-bold text-[#2f5d36]">
                 {totals.pendingRequests}
               </span>
             </p>
             <p className="rounded-lg border border-[#d3e2bf] bg-white px-3 py-2 text-xs text-[#5f7659]">
-              Accepted / Rejected / Closed:{" "}
+              {tr("Accepted / Rejected / Closed")}:{" "}
               <span className="font-bold text-[#2f5d36]">
                 {totals.acceptedRequests} / {totals.rejectedRequests} /{" "}
                 {totals.closedRequests}

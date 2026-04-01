@@ -6,10 +6,12 @@ import MessageBar from "../components/MessageBar";
 import { loginUser } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
 import { useAuth } from "../hooks/useAuth";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { tr } = useLanguage();
 
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [message, setMessage] = useState("");
@@ -25,10 +27,10 @@ function LoginPage() {
     try {
       const data = await loginUser(form);
       login({ token: data.token, user: data.user });
-      setMessage("Login successful ✅");
+      setMessage(tr("Login successful ✅"));
       navigate("/home");
     } catch (err) {
-      setError(toFriendlyError(err, "Could not login. Please try again."));
+      setError(toFriendlyError(err, tr("Could not login. Please try again.")));
     } finally {
       setLoading(false);
     }
@@ -42,7 +44,7 @@ function LoginPage() {
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Phone or Email
+            {tr("Phone or Email")}
           </label>
           <input
             value={form.identifier}
@@ -51,14 +53,14 @@ function LoginPage() {
             }
             autoComplete="username"
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="Enter phone or email"
+            placeholder={tr("Enter phone or email")}
             required
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-[#375138]">
-            Password
+            {tr("Password")}
           </label>
           <input
             type="password"
@@ -68,13 +70,13 @@ function LoginPage() {
             }
             autoComplete="current-password"
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
-            placeholder="Enter password"
+            placeholder={tr("Enter password")}
             required
           />
         </div>
 
         <LargeButton
-          text={loading ? "Please wait..." : "Login"}
+          text={loading ? tr("Please wait...") : tr("Login")}
           icon="🔐"
           type="submit"
           disabled={loading}
@@ -86,15 +88,15 @@ function LoginPage() {
 
       <div className="space-y-2 text-sm text-[#48604a]">
         <p>
-          New here?{" "}
+          {tr("New here?")}{" "}
           <Link className="font-bold text-[#1f5d2f]" to="/register">
-            Register
+            {tr("Register")}
           </Link>
         </p>
         <p>
-          Consumer view:{" "}
+          {tr("Consumer view:")}{" "}
           <Link className="font-bold text-[#1f5d2f]" to="/product/1">
-            Open a product page
+            {tr("Open a product page")}
           </Link>
         </p>
       </div>

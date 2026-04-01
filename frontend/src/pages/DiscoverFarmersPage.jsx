@@ -4,8 +4,10 @@ import LargeButton from "../components/LargeButton";
 import MessageBar from "../components/MessageBar";
 import { createTradeRequest, fetchFarmers } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function DiscoverFarmersPage() {
+  const { tr } = useLanguage();
   const [filters, setFilters] = useState({
     crop: "",
     location: "",
@@ -43,7 +45,7 @@ function DiscoverFarmersPage() {
       const response = await fetchFarmers(queryParams);
       setFarmers(response?.farmers || []);
     } catch (err) {
-      setError(toFriendlyError(err, "Could not load farmers."));
+      setError(toFriendlyError(err, tr("Could not load farmers.")));
     } finally {
       setLoading(false);
     }
@@ -73,7 +75,7 @@ function DiscoverFarmersPage() {
         message: requestForm.message,
       });
 
-      setMessage("Request sent to farmer ✅");
+      setMessage(tr("Request sent to farmer ✅"));
       setRequestForm({
         crop: "",
         quantity: "",
@@ -83,7 +85,7 @@ function DiscoverFarmersPage() {
       });
       setActiveFarmerId("");
     } catch (err) {
-      setError(toFriendlyError(err, "Could not send request."));
+      setError(toFriendlyError(err, tr("Could not send request.")));
     } finally {
       setSending(false);
     }
@@ -105,7 +107,7 @@ function DiscoverFarmersPage() {
               setFilters((prev) => ({ ...prev, crop: e.target.value }))
             }
             className="rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-            placeholder="Crop"
+            placeholder={tr("Crop")}
           />
           <input
             value={filters.location}
@@ -113,7 +115,7 @@ function DiscoverFarmersPage() {
               setFilters((prev) => ({ ...prev, location: e.target.value }))
             }
             className="rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-            placeholder="Location"
+            placeholder={tr("Location")}
           />
           <input
             value={filters.method}
@@ -121,13 +123,13 @@ function DiscoverFarmersPage() {
               setFilters((prev) => ({ ...prev, method: e.target.value }))
             }
             className="rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-            placeholder="Method"
+            placeholder={tr("Method")}
           />
         </div>
 
         <LargeButton
           icon="🔎"
-          text={loading ? "Searching..." : "Search Farmers"}
+          text={loading ? tr("Searching...") : tr("Search Farmers")}
           onClick={loadFarmers}
           disabled={loading}
           tone="secondary"
@@ -137,12 +139,12 @@ function DiscoverFarmersPage() {
         <MessageBar message={error} type="error" />
 
         {loading ? (
-          <p className="text-sm text-[#5b6c52]">Loading farmers...</p>
+          <p className="text-sm text-[#5b6c52]">{tr("Loading farmers...")}</p>
         ) : null}
 
         {!loading && farmers.length === 0 ? (
           <p className="text-sm text-[#5b6c52]">
-            No farmers found for current filters.
+            {tr("No farmers found for current filters.")}
           </p>
         ) : null}
 
@@ -161,19 +163,19 @@ function DiscoverFarmersPage() {
                     {profile.farmName || farmer.name}
                   </p>
                   <p className="text-xs text-[#587057]">
-                    Farmer: {farmer.name}
+                    {tr("Farmer")}: {farmer.name}
                   </p>
                   <p className="text-xs text-[#587057]">
-                    Location: {profile.location || "Not shared"}
+                    {tr("Location")}: {profile.location || tr("Not shared")}
                   </p>
                   <p className="text-xs text-[#587057]">
-                    Crops:{" "}
+                    {tr("Crops")}:{" "}
                     {(profile.primaryCrops || []).length > 0
                       ? profile.primaryCrops.join(", ")
-                      : "Not shared"}
+                      : tr("Not shared")}
                   </p>
                   <p className="text-xs text-[#587057]">
-                    Method: {profile.farmingMethod || "Not shared"}
+                    {tr("Method")}: {profile.farmingMethod || tr("Not shared")}
                   </p>
                   {profile.bio ? (
                     <p className="mt-2 text-sm text-[#355938]">{profile.bio}</p>
@@ -186,7 +188,7 @@ function DiscoverFarmersPage() {
                     }
                     className="mt-3 rounded-xl bg-[#dff1ce] px-4 py-2 text-sm font-bold text-[#245b2c]"
                   >
-                    {selected ? "Cancel" : "Select & Send Request"}
+                    {selected ? tr("Cancel") : tr("Select & Send Request")}
                   </button>
 
                   {selected ? (
@@ -200,7 +202,7 @@ function DiscoverFarmersPage() {
                           }))
                         }
                         className="w-full rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-                        placeholder="Crop name"
+                        placeholder={tr("Crop name")}
                       />
                       <div className="grid grid-cols-2 gap-2">
                         <input
@@ -212,7 +214,7 @@ function DiscoverFarmersPage() {
                             }))
                           }
                           className="rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-                          placeholder="Quantity"
+                          placeholder={tr("Quantity")}
                         />
                         <input
                           value={requestForm.unit}
@@ -223,7 +225,7 @@ function DiscoverFarmersPage() {
                             }))
                           }
                           className="rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-                          placeholder="Unit (KG)"
+                          placeholder={tr("Unit (KG)")}
                         />
                       </div>
                       <input
@@ -238,7 +240,7 @@ function DiscoverFarmersPage() {
                           }))
                         }
                         className="w-full rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-                        placeholder="Offered total price (INR)"
+                        placeholder={tr("Offered total price (INR)")}
                       />
                       <textarea
                         rows={3}
@@ -250,12 +252,14 @@ function DiscoverFarmersPage() {
                           }))
                         }
                         className="w-full rounded-xl border border-[#cddab5] px-3 py-2 text-sm outline-none focus:border-[#2f7d35]"
-                        placeholder="Message to farmer"
+                        placeholder={tr("Message to farmer")}
                       />
 
                       <LargeButton
                         icon="📨"
-                        text={sending ? "Sending..." : "Send Buy Request"}
+                        text={
+                          sending ? tr("Sending...") : tr("Send Buy Request")
+                        }
                         onClick={onSendRequest}
                         disabled={sending}
                       />

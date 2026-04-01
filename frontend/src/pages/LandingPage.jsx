@@ -4,31 +4,35 @@ import { MagicCard } from "@/components/ui/magic-card";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 import { useAuth } from "../hooks/useAuth";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function LandingPage() {
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuth();
+  const { language, setLanguage, tr, translateRole, t } = useLanguage();
   const [productId, setProductId] = useState("");
   const [activeUpdateIndex, setActiveUpdateIndex] = useState(0);
 
   const greeting = useMemo(() => {
     if (!isLoggedIn) {
-      return "Track farm products from harvest to market";
+      return tr("Track farm products from harvest to market");
     }
 
-    return `Welcome back, ${user?.name || "Team"}`;
-  }, [isLoggedIn, user?.name]);
+    return `${tr("Welcome back")}, ${user?.name || t("common.team", "Team")}`;
+  }, [isLoggedIn, tr, t, user?.name]);
 
-  const roleLabel = isLoggedIn ? user?.role || "Member" : "Guest";
+  const roleLabel = isLoggedIn
+    ? translateRole(user?.role || "Member")
+    : translateRole("Guest");
   const pulseMessage = !isLoggedIn
-    ? "Start with instant public traceability."
+    ? tr("Start with instant public traceability.")
     : user?.role === "Farmer"
-      ? "Publish fresh batches with immutable proof."
+      ? tr("Publish fresh batches with immutable proof.")
       : user?.role === "Retailer"
-        ? "Source trusted produce with transparent pricing."
-        : "Track trusted journeys across every checkpoint.";
-  const snapshotLabel = isLoggedIn ? "Session" : "Access";
-  const snapshotValue = isLoggedIn ? "Connected" : "Public";
+        ? tr("Source trusted produce with transparent pricing.")
+        : tr("Track trusted journeys across every checkpoint.");
+  const snapshotLabel = isLoggedIn ? tr("Session") : tr("Access");
+  const snapshotValue = isLoggedIn ? tr("Connected") : tr("Public");
 
   const liveUpdates = useMemo(() => {
     if (!isLoggedIn) {
@@ -136,9 +140,25 @@ function LandingPage() {
                 <p className="inline-flex rounded-full border border-[#c1d5a5] bg-[#e8f5d5] px-3 py-1 text-xs font-bold text-[#2f5a33]">
                   VerdeX Supply Chain Traceability
                 </p>
-                <span className="rounded-full border border-[#bfd4a4] bg-[#eff8e3] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#3a5b3e]">
-                  Green Verified Network
-                </span>
+                <div className="inline-flex items-center gap-2">
+                  <span className="rounded-full border border-[#bfd4a4] bg-[#eff8e3] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#3a5b3e]">
+                    {tr("Green Verified Network")}
+                  </span>
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-[#c7d9b1] bg-white px-2 py-1.5">
+                    <span className="text-[10px] font-bold uppercase text-[#587255]">
+                      {t("language.label", "Language")}
+                    </span>
+                    <select
+                      value={language}
+                      onChange={(event) => setLanguage(event.target.value)}
+                      className="rounded-lg border border-[#c8d9b3] bg-[#f5fbe9] px-2 py-1 text-xs font-bold text-[#2d5a38] outline-none"
+                    >
+                      <option value="en">EN</option>
+                      <option value="hi">HI</option>
+                      <option value="kn">KN</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <h1 className="mt-4 font-title text-4xl leading-tight text-[#21412f] lg:text-5xl">
@@ -243,7 +263,7 @@ function LandingPage() {
                     className="smooth-btn !bg-[#2f7d35] !text-white"
                     onClick={() => navigate("/home")}
                   >
-                    🏠 Open Dashboard
+                    🏠 {tr("Open Dashboard")}
                   </ShimmerButton>
                 ) : (
                   <>
@@ -254,7 +274,7 @@ function LandingPage() {
                       className="smooth-btn !bg-[#2f7d35] !text-white"
                       onClick={() => navigate("/login")}
                     >
-                      🔐 Login
+                      🔐 {tr("Login")}
                     </ShimmerButton>
                     <ShimmerButton
                       background="#edf6df"
@@ -263,7 +283,7 @@ function LandingPage() {
                       className="smooth-btn !border-[#93b07d] !bg-[#edf6df] !text-[#2f4a33]"
                       onClick={() => navigate("/register")}
                     >
-                      📝 Register
+                      📝 {tr("Register")}
                     </ShimmerButton>
                   </>
                 )}
@@ -281,14 +301,14 @@ function LandingPage() {
           >
             <aside className="hover-pop rounded-3xl border border-[#cce0b5] bg-[#f8fced] p-6">
               <h2 className="font-title text-3xl text-[#234630]">
-                Quick Track
+                {tr("Quick Track")}
               </h2>
               <p className="mt-2 text-sm text-[#4a694b]">
-                Enter product ID to view full journey instantly.
+                {tr("Enter product ID to view full journey instantly.")}
               </p>
 
               <label className="mt-5 block text-sm font-bold text-[#36523b]">
-                Product ID
+                {tr("Product ID")}
               </label>
               <input
                 value={productId}
@@ -306,7 +326,7 @@ function LandingPage() {
                 onClick={onTrack}
                 className="smooth-btn mt-4 w-full !bg-[#2f7d35] !text-white"
               >
-                🔍 Track Product
+                🔍 {tr("Track Product")}
               </ShimmerButton>
 
               <div className="hover-pop mt-5 rounded-2xl border border-[#d6e6c5] bg-[#edf6df] p-3">

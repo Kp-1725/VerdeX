@@ -7,10 +7,12 @@ import { archiveMyProductMetadata, fetchMyProducts } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
 import MessageBar from "../components/MessageBar";
 import { MagicCard } from "@/components/ui/magic-card";
+import { useLanguage } from "../hooks/LanguageContext";
 
 function HomePage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { tr } = useLanguage();
   const [myProducts, setMyProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [productError, setProductError] = useState("");
@@ -32,7 +34,7 @@ function HomePage() {
         setMyProducts(data?.products || []);
       } catch (error) {
         setProductError(
-          toFriendlyError(error, "Could not load your products."),
+          toFriendlyError(error, tr("Could not load your products.")),
         );
       } finally {
         setLoadingProducts(false);
@@ -60,10 +62,13 @@ function HomePage() {
       setMyProducts((prev) =>
         prev.filter((product) => product.productId !== item.productId),
       );
-      setProductMessage(data?.message || "Archived ✅");
+      setProductMessage(data?.message || tr("Archived ✅"));
     } catch (error) {
       setProductError(
-        toFriendlyError(error, "Could not archive product. Please try again."),
+        toFriendlyError(
+          error,
+          tr("Could not archive product. Please try again."),
+        ),
       );
     } finally {
       setArchivingId(null);
@@ -75,15 +80,17 @@ function HomePage() {
 
   return (
     <MobileContainer
-      title={`Hello, ${user?.name || "User"}`}
+      title={`${tr("Hello")}, ${user?.name || tr("User")}`}
       subtitle="Choose what you want to do"
       showNav
     >
       <section className="rounded-2xl border border-[#d4e2bf] bg-[#f5fbe9] p-3">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-base font-black text-[#2d4831]">Quick Actions</h2>
+          <h2 className="text-base font-black text-[#2d4831]">
+            {tr("Quick Actions")}
+          </h2>
           <span className="rounded-full bg-[#e7f3d6] px-3 py-1 text-[11px] font-bold text-[#4b6848]">
-            One-tap flows
+            {tr("One-tap flows")}
           </span>
         </div>
 
@@ -91,21 +98,21 @@ function HomePage() {
           {isFarmer ? (
             <LargeButton
               icon="➕"
-              text="Add Product"
+              text={tr("Add Product")}
               onClick={() => navigate("/add-product")}
             />
           ) : null}
 
           <LargeButton
             icon="🔄"
-            text="Update Status"
+            text={tr("Update Status")}
             onClick={() => navigate("/update-status")}
             tone="secondary"
           />
 
           <LargeButton
             icon="🔍"
-            text="Track Product"
+            text={tr("Track Product")}
             onClick={() => navigate("/track")}
             tone="secondary"
           />
@@ -113,7 +120,7 @@ function HomePage() {
           {isFarmer ? (
             <LargeButton
               icon="🚜"
-              text="My Farm Profile"
+              text={tr("My Farm Profile")}
               onClick={() => navigate("/farmer-profile")}
               tone="secondary"
             />
@@ -122,7 +129,7 @@ function HomePage() {
           {isRetailer ? (
             <LargeButton
               icon="🧑‍🌾"
-              text="Discover Farmers"
+              text={tr("Discover Farmers")}
               onClick={() => navigate("/discover-farmers")}
               tone="secondary"
             />
@@ -130,14 +137,14 @@ function HomePage() {
 
           <LargeButton
             icon="💬"
-            text="Requests Inbox"
+            text={tr("Requests Inbox")}
             onClick={() => navigate("/requests")}
             tone="secondary"
           />
 
           <LargeButton
             icon="📊"
-            text="Live Metrics"
+            text={tr("Live Metrics")}
             onClick={() => navigate("/metrics")}
             tone="secondary"
           />
@@ -156,24 +163,28 @@ function HomePage() {
           <section className="rounded-2xl border border-[#d6e3be] bg-[#f7fbe9] p-3">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-base font-bold text-[#2f4a33]">
-                My Products
+                {tr("My Products")}
               </h2>
               <button
                 type="button"
                 onClick={() => navigate("/add-product")}
                 className="rounded-xl bg-[#d9efcd] px-3 py-1 text-xs font-bold text-[#245b2c]"
               >
-                Add New
+                {tr("Add New")}
               </button>
             </div>
 
             {loadingProducts ? (
-              <p className="text-sm text-[#5b6c52]">Loading your items...</p>
+              <p className="text-sm text-[#5b6c52]">
+                {tr("Loading your items...")}
+              </p>
             ) : null}
 
             {!loadingProducts && !productError && myProducts.length === 0 ? (
               <p className="text-sm text-[#5b6c52]">
-                No products yet. Tap Add Product to create your first item.
+                {tr(
+                  "No products yet. Tap Add Product to create your first item.",
+                )}
               </p>
             ) : null}
 
@@ -208,14 +219,14 @@ function HomePage() {
                           }
                           className="rounded-lg bg-[#e8f5dc] px-3 py-2 text-xs font-bold text-[#245b2c]"
                         >
-                          Update
+                          {tr("Update")}
                         </button>
                         <button
                           type="button"
                           onClick={() => navigate(`/product/${item.productId}`)}
                           className="rounded-lg bg-[#edf5ff] px-3 py-2 text-xs font-bold text-[#24507c]"
                         >
-                          Open
+                          {tr("Open")}
                         </button>
                         <button
                           type="button"
@@ -224,8 +235,8 @@ function HomePage() {
                           className="rounded-lg bg-[#ffe6e0] px-3 py-2 text-xs font-bold text-[#8a2f24] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {archivingId === item.productId
-                            ? "Archiving..."
-                            : "Archive"}
+                            ? tr("Archiving...")
+                            : tr("Archive")}
                         </button>
                       </div>
                     </div>
@@ -248,7 +259,7 @@ function HomePage() {
         }}
         className="mt-3 w-full rounded-2xl border border-[#f3b6a5] bg-[#fff1ea] px-4 py-3 text-base font-bold text-[#843f28]"
       >
-        Logout
+        {tr("Logout")}
       </button>
     </MobileContainer>
   );
