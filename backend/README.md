@@ -19,13 +19,13 @@
 ## Security Defaults
 
 - JWT now uses stronger defaults:
-   - `JWT_SECRET` minimum 32 chars
-   - `JWT_EXPIRES_IN` default `12h`
-   - issuer/audience validation via `JWT_ISSUER` and `JWT_AUDIENCE`
+  - `JWT_SECRET` minimum 32 chars
+  - `JWT_EXPIRES_IN` default `12h`
+  - issuer/audience validation via `JWT_ISSUER` and `JWT_AUDIENCE`
 - Password policy requires at least 10 chars with upper, lower, number, and symbol.
 - On-chain proof verification is enabled by default with:
-   - `CHAIN_VERIFICATION_MODE=live`
-   - `CHAIN_RPC_URL`, `CHAIN_ID`, `CHAIN_CONTRACT_ADDRESS`
+  - `CHAIN_VERIFICATION_MODE=live`
+  - `CHAIN_RPC_URL`, `CHAIN_ID`, `CHAIN_CONTRACT_ADDRESS`
 
 You can set `CHAIN_VERIFICATION_MODE=auto` to allow local fallback when chain config is missing, or `off` only for controlled development/testing.
 
