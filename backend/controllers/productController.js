@@ -1,6 +1,8 @@
 const Product = require("../models/Product");
+const TradeRequest = require("../models/TradeRequest");
 const { fetchGovPriceRecommendation } = require("../services/govPriceService");
 const { fetchMlPriceForecast } = require("../services/mlPriceService");
+const { verifyOnChainProof } = require("../services/chainVerificationService");
 
 function createHttpError(statusCode, message) {
   const error = new Error(message);
@@ -119,6 +121,84 @@ function inferStateFromLocation(location) {
   return locationParts[locationParts.length - 1];
 }
 
+function normalizeStage(rawStage) {
+  const stage = String(rawStage || "").trim();
+  if (!stage) {
+    throw createHttpError(400, "Please choose a status.");
+  }
+
+  if (stage.length > 80) {
+    throw createHttpError(400, "Status is too long.");
+  }
+
+  return stage;
+}
+
+function isSameObjectId(valueA, valueB) {
+  return String(valueA || "") === String(valueB || "");
+}
+
+async function ensureStageUpdateAuthorized(product, user) {
+  if (!user || !product) {
+    throw createHttpError(403, "You do not have permission for this action.");
+  }
+
+  if (user.role === "Farmer") {
+    if (!isSameObjectId(product.createdBy, user._id)) {
+      throw createHttpError(
+        403,
+        "Farmers can only update products they created.",
+      );
+    }
+
+    return;
+  }
+
+  if (user.role === "Retailer") {
+    const hasAcceptedRelationship = await TradeRequest.exists({
+      retailer: user._id,
+      farmer: product.createdBy,
+      status: { $in: ["Accepted", "Closed"] },
+    });
+
+    if (!hasAcceptedRelationship) {
+      throw createHttpError(
+        403,
+        "Retailer can update only products from farmers with accepted requests.",
+      );
+    }
+
+    return;
+  }
+
+  throw createHttpError(403, "You do not have permission for this action.");
+}
+
+function sanitizePublicProduct(product) {
+  const rawProduct = product?.toObject ? product.toObject() : product;
+  const rawStages = Array.isArray(rawProduct?.stages) ? rawProduct.stages : [];
+
+  return {
+    productId: rawProduct.productId,
+    name: rawProduct.name,
+    farmerSellPrice: rawProduct.farmerSellPrice,
+    retailPrice: rawProduct.retailPrice,
+    pricingCurrency: rawProduct.pricingCurrency,
+    qrUrl: rawProduct.qrUrl,
+    isArchived: Boolean(rawProduct.isArchived),
+    createdAt: rawProduct.createdAt,
+    updatedAt: rawProduct.updatedAt,
+    creationProof: rawProduct.creationProof || null,
+    stages: rawStages.map((item) => ({
+      stage: item.stage,
+      updatedByName: item.updatedByName,
+      updatedByRole: item.updatedByRole,
+      updatedAt: item.updatedAt,
+      chainProof: item.chainProof || null,
+    })),
+  };
+}
+
 async function createProduct(req, res) {
   try {
     const {
@@ -140,6 +220,15 @@ async function createProduct(req, res) {
         .json({ message: "Product ID should be a number." });
     }
 
+    const normalizedName = String(name).trim();
+    if (!normalizedName) {
+      return res.status(400).json({ message: "Product name is required." });
+    }
+
+    if (normalizedName.length > 120) {
+      return res.status(400).json({ message: "Product name is too long." });
+    }
+
     const chainProof = normalizeChainProof(rawProof);
     if (!chainProof) {
       throw createHttpError(400, "Blockchain proof is required.");
@@ -157,12 +246,19 @@ async function createProduct(req, res) {
       return res.status(409).json({ message: "Product ID already exists." });
     }
 
+    await verifyOnChainProof({
+      chainProof,
+      expectedAction: "addProduct",
+      expectedProductId: parsedId,
+      expectedText: normalizedName,
+    });
+
     const publicAppUrl = process.env.PUBLIC_APP_URL || "http://localhost:5173";
     const qrUrl = `${publicAppUrl}/product/${parsedId}`;
 
     const product = await Product.create({
       productId: parsedId,
-      name: String(name).trim(),
+      name: normalizedName,
       farmerSellPrice: parsedFarmerSellPrice,
       pricingCurrency: normalizedCurrency || "INR",
       qrUrl,
@@ -190,10 +286,7 @@ async function addStageMetadata(req, res) {
   try {
     const { productId } = req.params;
     const { stage, retailPrice, chainProof: rawProof } = req.body;
-
-    if (!stage) {
-      return res.status(400).json({ message: "Please choose a status." });
-    }
+    const normalizedStage = normalizeStage(stage);
 
     const parsedId = Number(productId);
     if (Number.isNaN(parsedId)) {
@@ -218,6 +311,15 @@ async function addStageMetadata(req, res) {
         .json({ message: "Archived products cannot be updated." });
     }
 
+    await ensureStageUpdateAuthorized(product, req.user);
+
+    await verifyOnChainProof({
+      chainProof,
+      expectedAction: "addStage",
+      expectedProductId: parsedId,
+      expectedText: normalizedStage,
+    });
+
     const includesRetailPrice =
       retailPrice !== undefined &&
       retailPrice !== null &&
@@ -235,7 +337,7 @@ async function addStageMetadata(req, res) {
     }
 
     product.stages.push({
-      stage: String(stage),
+      stage: normalizedStage,
       updatedBy: req.user._id,
       updatedByName: req.user.name,
       updatedByRole: req.user.role,
@@ -273,7 +375,7 @@ async function getProductMetadata(req, res) {
       return res.status(404).json({ message: "Product not found." });
     }
 
-    return res.json({ product });
+    return res.json({ product: sanitizePublicProduct(product) });
   } catch (error) {
     return res
       .status(500)

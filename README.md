@@ -198,3 +198,14 @@ Frontend:
 - If CORS fails, verify CLIENT_ORIGIN in backend env
 - If price recommendation should run without key, use GOVT_PRICE_MODE=auto or GOVT_PRICE_MODE=prototype
 - If blockchain actions fail, verify MetaMask network and contract configuration in frontend env
+
+## Security Notes
+
+- API now enforces strict on-chain proof checks for product creation and stage updates (tx/event validation).
+- Product stage updates are object-level authorized (not only role-based).
+- Farmer discovery responses no longer expose account identifier values.
+- Auth tokens are persisted in browser session storage instead of local storage.
+- Backend JWT security defaults:
+  - 32+ character `JWT_SECRET`
+  - `JWT_EXPIRES_IN=12h` default
+  - issuer/audience validation

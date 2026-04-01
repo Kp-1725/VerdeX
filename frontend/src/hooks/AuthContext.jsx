@@ -5,7 +5,7 @@ import { fetchMe } from "../utils/api";
 export const AuthContext = createContext(null);
 
 function readStoredAuth() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = sessionStorage.getItem(STORAGE_KEY);
   if (!saved) {
     return { token: "", user: null };
   }
@@ -17,7 +17,7 @@ function readStoredAuth() {
       user: parsed?.user || null,
     };
   } catch (error) {
-    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
     return { token: "", user: null };
   }
 }
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
   const [authState, setAuthState] = useState(readStoredAuth);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(authState));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(authState));
   }, [authState]);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
         }
 
         setAuthState({ token: "", user: null });
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
       }
     }
 
@@ -95,7 +95,7 @@ export function AuthProvider({ children }) {
       },
       logout: () => {
         setAuthState({ token: "", user: null });
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
       },
     }),
     [authState],

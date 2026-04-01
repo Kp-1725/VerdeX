@@ -64,8 +64,8 @@ async function startServer() {
       throw new Error("MONGODB_URI is missing.");
     }
 
-    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 16) {
-      throw new Error("JWT_SECRET must be at least 16 characters long.");
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+      throw new Error("JWT_SECRET must be at least 32 characters long.");
     }
 
     await mongoose.connect(process.env.MONGODB_URI);

@@ -43,6 +43,15 @@ function containsText(source, target) {
     .includes(String(target || "").toLowerCase());
 }
 
+function sanitizeFarmerProfileResponse(farmer) {
+  return {
+    _id: farmer._id,
+    name: farmer.name,
+    createdAt: farmer.createdAt,
+    farmerProfile: farmer.farmerProfile || {},
+  };
+}
+
 async function upsertMyFarmerProfile(req, res) {
   try {
     if (req.user.role !== "Farmer") {
@@ -138,7 +147,7 @@ async function listFarmers(req, res) {
     const methodFilter = String(req.query.method || "").trim();
 
     const farmers = await User.find({ role: "Farmer" })
-      .select("name identifier farmerProfile createdAt")
+      .select("name farmerProfile createdAt")
       .sort({ createdAt: -1 })
       .limit(100)
       .lean();
@@ -166,7 +175,9 @@ async function listFarmers(req, res) {
       return true;
     });
 
-    return res.json({ farmers: filtered });
+    return res.json({
+      farmers: filtered.map((farmer) => sanitizeFarmerProfileResponse(farmer)),
+    });
   } catch (error) {
     return res.status(500).json({ message: "Could not fetch farmers." });
   }
@@ -177,14 +188,14 @@ async function getFarmerById(req, res) {
     const { farmerId } = req.params;
 
     const farmer = await User.findOne({ _id: farmerId, role: "Farmer" })
-      .select("name identifier farmerProfile createdAt")
+      .select("name farmerProfile createdAt")
       .lean();
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found." });
     }
 
-    return res.json({ farmer });
+    return res.json({ farmer: sanitizeFarmerProfileResponse(farmer) });
   } catch (error) {
     return res.status(500).json({ message: "Could not fetch farmer profile." });
   }
