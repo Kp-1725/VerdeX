@@ -9,6 +9,9 @@ import UpdateStatusPage from "./pages/UpdateStatusPage";
 import TrackProductPage from "./pages/TrackProductPage";
 import PublicProductPage from "./pages/PublicProductPage";
 import LandingPage from "./pages/LandingPage";
+import FarmerProfilePage from "./pages/FarmerProfilePage";
+import DiscoverFarmersPage from "./pages/DiscoverFarmersPage";
+import RequestsInboxPage from "./pages/RequestsInboxPage";
 
 function App() {
   return (
@@ -53,6 +56,34 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/farmer-profile"
+        element={
+          <RoleRoute allowedRoles={["Farmer"]}>
+            <FarmerProfilePage />
+          </RoleRoute>
+        }
+      />
+
+      <Route
+        path="/discover-farmers"
+        element={
+          <RoleRoute allowedRoles={["Retailer"]}>
+            <DiscoverFarmersPage />
+          </RoleRoute>
+        }
+      />
+
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <RequestsInboxPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

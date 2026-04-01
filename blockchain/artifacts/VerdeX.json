@@ -1,9 +1,14 @@
 {
-  "contractName": "AgriTraceability",
-  "address": "0x1fa067efdbf5805cAFB03e900761D8D6D7417212",
+  "contractName": "VerdeX",
+  "address": "0x14fB404226370341db780379351631E5e95C215b",
   "chainId": 1337,
   "deployer": "0x4C2a75372D23A9dCcbB13cFFBc3261c988F19e0c",
   "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
     {
       "anonymous": false,
       "inputs": [
@@ -40,6 +45,25 @@
         }
       ],
       "name": "StageAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isAllowed",
+          "type": "bool"
+        }
+      ],
+      "name": "WriterUpdated",
       "type": "event"
     },
     {
@@ -111,6 +135,56 @@
           "internalType": "string",
           "name": "",
           "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "isAllowed",
+          "type": "bool"
+        }
+      ],
+      "name": "setWriter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "writers",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

@@ -1,5 +1,6 @@
 import { createContext, useEffect, useMemo, useState } from "react";
 import { STORAGE_KEY } from "../utils/constants";
+import { fetchMe } from "../utils/api";
 
 export const AuthContext = createContext(null);
 
@@ -27,6 +28,59 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(authState));
   }, [authState]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function syncUserFromServer() {
+      if (!authState.token) {
+        return;
+      }
+
+      try {
+        const response = await fetchMe();
+        const serverUser = response?.user
+          ? {
+              id: response.user._id || response.user.id || "",
+              name: response.user.name || "",
+              role: response.user.role || "",
+              identifier: response.user.identifier || "",
+            }
+          : null;
+
+        if (!isActive || !serverUser) {
+          return;
+        }
+
+        const currentUser = authState.user || {};
+        const hasMismatch =
+          currentUser.id !== serverUser.id ||
+          currentUser.name !== serverUser.name ||
+          currentUser.role !== serverUser.role ||
+          currentUser.identifier !== serverUser.identifier;
+
+        if (hasMismatch) {
+          setAuthState((prev) => ({
+            ...prev,
+            user: serverUser,
+          }));
+        }
+      } catch (error) {
+        if (!isActive) {
+          return;
+        }
+
+        setAuthState({ token: "", user: null });
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    syncUserFromServer();
+
+    return () => {
+      isActive = false;
+    };
+  }, [authState.token]);
 
   const value = useMemo(
     () => ({

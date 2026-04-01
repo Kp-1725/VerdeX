@@ -4,7 +4,8 @@ const {
   addStageMetadata,
   getProductMetadata,
   getMyProducts,
-  deleteMyProduct,
+  getShelfProducts,
+  archiveMyProduct,
 } = require("../controllers/productController");
 const { requireAuth } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
@@ -12,11 +13,12 @@ const { authorizeRoles } = require("../middleware/roleMiddleware");
 const router = express.Router();
 
 router.get("/mine", requireAuth, authorizeRoles("Farmer"), getMyProducts);
+router.get("/shelf", requireAuth, authorizeRoles("Retailer"), getShelfProducts);
 router.delete(
   "/:productId",
   requireAuth,
   authorizeRoles("Farmer"),
-  deleteMyProduct,
+  archiveMyProduct,
 );
 router.get("/:productId", getProductMetadata);
 router.post("/", requireAuth, authorizeRoles("Farmer"), createProduct);

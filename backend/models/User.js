@@ -1,6 +1,56 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+const farmerProfileSchema = new mongoose.Schema(
+  {
+    farmName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    location: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    acreage: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    primaryCrops: {
+      type: [String],
+      default: [],
+    },
+    farmingMethod: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    certifications: {
+      type: [String],
+      default: [],
+    },
+    bio: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 600,
+    },
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    preferredContact: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  { _id: false },
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -24,6 +74,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 6,
+    },
+    farmerProfile: {
+      type: farmerProfileSchema,
+      default: () => ({}),
     },
   },
   { timestamps: true },

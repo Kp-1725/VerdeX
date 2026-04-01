@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import MobileContainer from "../components/MobileContainer";
 import LargeButton from "../components/LargeButton";
 import { useAuth } from "../hooks/useAuth";
-import { deleteMyProductMetadata, fetchMyProducts } from "../utils/api";
+import { archiveMyProductMetadata, fetchMyProducts } from "../utils/api";
 import { toFriendlyError } from "../utils/blockchain";
 import MessageBar from "../components/MessageBar";
 import { MagicCard } from "@/components/ui/magic-card";
@@ -15,7 +15,7 @@ function HomePage() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [productError, setProductError] = useState("");
   const [productMessage, setProductMessage] = useState("");
-  const [deletingId, setDeletingId] = useState(null);
+  const [archivingId, setArchivingId] = useState(null);
 
   useEffect(() => {
     async function loadMyProducts() {
@@ -42,9 +42,9 @@ function HomePage() {
     loadMyProducts();
   }, [user?.role]);
 
-  async function onDeleteProduct(item) {
+  async function onArchiveProduct(item) {
     const confirmed = window.confirm(
-      `Delete ${item.name} (ID: ${item.productId}) from your list?`,
+      `Archive ${item.name} (ID: ${item.productId})? This keeps history for audit.`,
     );
 
     if (!confirmed) {
@@ -53,20 +53,20 @@ function HomePage() {
 
     setProductMessage("");
     setProductError("");
-    setDeletingId(item.productId);
+    setArchivingId(item.productId);
 
     try {
-      const data = await deleteMyProductMetadata(item.productId);
+      const data = await archiveMyProductMetadata(item.productId);
       setMyProducts((prev) =>
         prev.filter((product) => product.productId !== item.productId),
       );
-      setProductMessage(data?.message || "Deleted ✅");
+      setProductMessage(data?.message || "Archived ✅");
     } catch (error) {
       setProductError(
-        toFriendlyError(error, "Could not delete product. Please try again."),
+        toFriendlyError(error, "Could not archive product. Please try again."),
       );
     } finally {
-      setDeletingId(null);
+      setArchivingId(null);
     }
   }
 
@@ -96,6 +96,31 @@ function HomePage() {
           icon="🔍"
           text="Track Product"
           onClick={() => navigate("/track")}
+          tone="secondary"
+        />
+
+        {user?.role === "Farmer" ? (
+          <LargeButton
+            icon="🚜"
+            text="My Farm Profile"
+            onClick={() => navigate("/farmer-profile")}
+            tone="secondary"
+          />
+        ) : null}
+
+        {user?.role === "Retailer" ? (
+          <LargeButton
+            icon="🧑‍🌾"
+            text="Discover Farmers"
+            onClick={() => navigate("/discover-farmers")}
+            tone="secondary"
+          />
+        ) : null}
+
+        <LargeButton
+          icon="💬"
+          text="Requests Inbox"
+          onClick={() => navigate("/requests")}
           tone="secondary"
         />
       </div>
@@ -175,13 +200,13 @@ function HomePage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => onDeleteProduct(item)}
-                          disabled={deletingId === item.productId}
+                          onClick={() => onArchiveProduct(item)}
+                          disabled={archivingId === item.productId}
                           className="rounded-lg bg-[#ffe6e0] px-3 py-2 text-xs font-bold text-[#8a2f24] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          {deletingId === item.productId
-                            ? "Deleting..."
-                            : "Delete"}
+                          {archivingId === item.productId
+                            ? "Archiving..."
+                            : "Archive"}
                         </button>
                       </div>
                     </div>

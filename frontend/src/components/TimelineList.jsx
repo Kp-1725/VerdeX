@@ -20,6 +20,23 @@ function TimelineList({ stages }) {
           {item.time ? (
             <p className="text-xs text-[#61725a]">{item.time}</p>
           ) : null}
+
+          {item.chainProof ? (
+            <div className="mt-2 rounded-xl border border-[#d0debb] bg-[#f1f8e3] px-3 py-2 text-xs text-[#355738]">
+              <p className="font-bold">On-chain proof</p>
+              <p className="break-all">Tx: {item.chainProof.txHash}</p>
+              <p>
+                Block: {item.chainProof.blockNumber} | Chain:{" "}
+                {item.chainProof.chainId}
+              </p>
+              <p className="break-all">
+                Contract: {item.chainProof.contractAddress}
+              </p>
+              <p className="break-all">
+                Wallet: {item.chainProof.walletAddress}
+              </p>
+            </div>
+          ) : null}
         </li>
       ))}
     </ol>

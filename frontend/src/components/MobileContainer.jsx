@@ -56,7 +56,7 @@ function MobileContainer({
         {isDesktop ? (
           <aside className="flex flex-col rounded-3xl border border-[#d3dcbf] bg-[#eff6de] p-6 shadow-[0_20px_45px_rgba(73,93,44,0.12)]">
             <h2 className="font-title text-3xl leading-tight text-[#21412f]">
-              Agri Trace
+              VerdeX
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-[#426447]">
               Track every product from farm to market with simple, clear steps.

@@ -49,10 +49,10 @@ function LandingPage() {
         >
           <section className="rounded-3xl border border-[#cce0b5] bg-[#f6fbeb] p-6 lg:p-8">
             <p className="inline-flex rounded-full border border-[#c1d5a5] bg-[#e8f5d5] px-3 py-1 text-xs font-bold text-[#2f5a33]">
-              Agricultural Supply Chain Traceability
+              VerdeX Supply Chain Traceability
             </p>
             <h1 className="mt-4 font-title text-4xl leading-tight text-[#21412f] lg:text-5xl">
-              Agri Trace
+              VerdeX
             </h1>
             <p className="mt-3 max-w-xl text-base leading-relaxed text-[#3f6345]">
               {greeting}

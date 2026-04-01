@@ -56,7 +56,55 @@ export async function fetchMyProducts() {
   return response.data;
 }
 
-export async function deleteMyProductMetadata(productId) {
+export async function fetchShelfProducts() {
+  const response = await api.get("/api/products/shelf");
+  return response.data;
+}
+
+export async function archiveMyProductMetadata(productId) {
   const response = await api.delete(`/api/products/${productId}`);
+  return response.data;
+}
+
+export const deleteMyProductMetadata = archiveMyProductMetadata;
+
+export async function updateMyFarmerProfile(payload) {
+  const response = await api.patch("/api/farmers/me/profile", payload);
+  return response.data;
+}
+
+export async function fetchFarmers(params = {}) {
+  const response = await api.get("/api/farmers", { params });
+  return response.data;
+}
+
+export async function fetchFarmerById(farmerId) {
+  const response = await api.get(`/api/farmers/${farmerId}`);
+  return response.data;
+}
+
+export async function createTradeRequest(payload) {
+  const response = await api.post("/api/requests", payload);
+  return response.data;
+}
+
+export async function fetchMyTradeRequests() {
+  const response = await api.get("/api/requests/mine");
+  return response.data;
+}
+
+export async function updateTradeRequestStatus(requestId, payload) {
+  const response = await api.patch(
+    `/api/requests/${requestId}/status`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function sendTradeRequestMessage(requestId, payload) {
+  const response = await api.post(
+    `/api/requests/${requestId}/messages`,
+    payload,
+  );
   return response.data;
 }

@@ -9,6 +9,7 @@ import { createProductMetadata } from "../utils/api";
 function AddProductPage() {
   const [name, setName] = useState("");
   const [productId, setProductId] = useState("");
+  const [farmerSellPrice, setFarmerSellPrice] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [qrUrl, setQrUrl] = useState("");
@@ -28,12 +29,18 @@ function AddProductPage() {
     setLoading(true);
 
     try {
-      if (!name || !productId) {
-        throw new Error("Please enter product name and ID.");
+      if (!name || !productId || !farmerSellPrice) {
+        throw new Error("Please enter product name, ID, and farmer price.");
       }
 
-      await addProductOnChain(productId, name);
-      const result = await createProductMetadata({ productId, name });
+      const chainProof = await addProductOnChain(productId, name);
+      const result = await createProductMetadata({
+        productId,
+        name,
+        farmerSellPrice: Number(farmerSellPrice),
+        pricingCurrency: "INR",
+        chainProof,
+      });
 
       setQrUrl(
         result?.product?.qrUrl ||
@@ -81,6 +88,20 @@ function AddProductPage() {
             }
             className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
             placeholder="For example: 1001"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-[#375138]">
+            Farmer Sell Price (INR)
+          </label>
+          <input
+            value={farmerSellPrice}
+            onChange={(e) =>
+              setFarmerSellPrice(e.target.value.replace(/[^0-9.]/g, ""))
+            }
+            className="w-full rounded-2xl border border-[#cddab5] px-4 py-4 text-lg outline-none focus:border-[#2f7d35]"
+            placeholder="For example: 120"
           />
         </div>
 

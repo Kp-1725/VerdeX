@@ -33,7 +33,7 @@ function ensureContractConfig() {
   }
 }
 
-async function getWritableContract() {
+async function getWritableContext() {
   ensureContractConfig();
 
   if (!window.ethereum) {
@@ -48,8 +48,28 @@ async function getWritableContract() {
   }
 
   const signer = await provider.getSigner();
+  const walletAddress = await signer.getAddress();
 
-  return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+  return {
+    contract: new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer),
+    chainId: Number(network.chainId),
+    walletAddress,
+  };
+}
+
+function buildChainProof(tx, receipt, chainId, walletAddress) {
+  const txHash = String(tx?.hash || "");
+  if (!txHash) {
+    throw new Error("Missing transaction hash from wallet confirmation.");
+  }
+
+  return {
+    txHash,
+    blockNumber: Number(receipt?.blockNumber ?? 0),
+    chainId,
+    contractAddress: CONTRACT_ADDRESS,
+    walletAddress,
+  };
 }
 
 function getReadableContract() {
@@ -60,15 +80,17 @@ function getReadableContract() {
 }
 
 export async function addProductOnChain(productId, name) {
-  const contract = await getWritableContract();
+  const { contract, chainId, walletAddress } = await getWritableContext();
   const tx = await contract.addProduct(Number(productId), name);
-  await tx.wait();
+  const receipt = await tx.wait();
+  return buildChainProof(tx, receipt, chainId, walletAddress);
 }
 
 export async function addStageOnChain(productId, stage) {
-  const contract = await getWritableContract();
+  const { contract, chainId, walletAddress } = await getWritableContext();
   const tx = await contract.addStage(Number(productId), stage);
-  await tx.wait();
+  const receipt = await tx.wait();
+  return buildChainProof(tx, receipt, chainId, walletAddress);
 }
 
 export async function getHistoryFromChain(productId) {
@@ -114,6 +136,10 @@ export function toFriendlyError(error, fallbackMessage) {
 
   if (lowerMessage.includes("insufficient funds")) {
     return "Wallet balance is low. Please add test funds and try again.";
+  }
+
+  if (lowerMessage.includes("not authorized to write")) {
+    return "This wallet is not allowed to update the contract yet.";
   }
 
   return fallbackMessage;

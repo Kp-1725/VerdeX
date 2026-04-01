@@ -8,13 +8,20 @@ dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
 
 const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:7545";
 const EXPECTED_CHAIN_ID = Number(process.env.CHAIN_ID || 1337);
+const WRITER_ADDRESSES = String(process.env.WRITER_ADDRESSES || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+const CONTRACT_SOURCE_FILE = "VerdeX.sol";
+const CONTRACT_NAME = "VerdeX";
+const ARTIFACT_FILE = "VerdeX.json";
 
-function compileContract(contractPath, contractName) {
+function compileContract(contractPath, sourceFile, contractName) {
   const source = fs.readFileSync(contractPath, "utf8");
   const input = {
     language: "Solidity",
     sources: {
-      "AgriTraceability.sol": { content: source },
+      [sourceFile]: { content: source },
     },
     settings: {
       optimizer: { enabled: true, runs: 200 },
@@ -37,7 +44,7 @@ function compileContract(contractPath, contractName) {
     }
   }
 
-  const compiled = output.contracts["AgriTraceability.sol"][contractName];
+  const compiled = output.contracts[sourceFile][contractName];
   return {
     abi: compiled.abi,
     bytecode: compiled.evm.bytecode.object,
@@ -74,9 +81,13 @@ async function main() {
     __dirname,
     "..",
     "contracts",
-    "AgriTraceability.sol",
+    CONTRACT_SOURCE_FILE,
   );
-  const { abi, bytecode } = compileContract(contractPath, "AgriTraceability");
+  const { abi, bytecode } = compileContract(
+    contractPath,
+    CONTRACT_SOURCE_FILE,
+    CONTRACT_NAME,
+  );
 
   const provider = new ethers.JsonRpcProvider(RPC_URL);
   const network = await provider.getNetwork();
@@ -95,8 +106,21 @@ async function main() {
   await contract.waitForDeployment();
   const address = await contract.getAddress();
 
+  for (const writer of WRITER_ADDRESSES) {
+    if (
+      !ethers.isAddress(writer) ||
+      writer.toLowerCase() === deployer.toLowerCase()
+    ) {
+      continue;
+    }
+
+    const writerTx = await contract.setWriter(writer, true);
+    await writerTx.wait();
+    console.log(`Writer authorized: ${writer}`);
+  }
+
   const artifact = {
-    contractName: "AgriTraceability",
+    contractName: CONTRACT_NAME,
     address,
     chainId,
     deployer,
@@ -107,7 +131,7 @@ async function main() {
     __dirname,
     "..",
     "artifacts",
-    "AgriTraceability.json",
+    ARTIFACT_FILE,
   );
   fs.writeFileSync(artifactPath, JSON.stringify(artifact, null, 2), "utf8");
 
