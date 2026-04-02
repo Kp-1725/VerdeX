@@ -1,12 +1,12 @@
 import { STAGE_OPTIONS } from "../utils/constants";
 import { useLanguage } from "../hooks/LanguageContext";
 
-function StageSelector({ selectedStage, onSelect }) {
+function StageSelector({ selectedStage, onSelect, options = STAGE_OPTIONS }) {
   const { tr } = useLanguage();
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {STAGE_OPTIONS.map((stage) => {
+      {options.map((stage) => {
         const emoji =
           stage === "Harvested"
             ? "🌱"

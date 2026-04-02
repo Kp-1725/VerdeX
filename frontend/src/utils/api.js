@@ -80,6 +80,11 @@ export async function fetchShelfProducts() {
   return response.data;
 }
 
+export async function fetchRetailerProductOptions() {
+  const response = await api.get("/api/products/retailer-options");
+  return response.data;
+}
+
 export async function fetchPlatformMetrics() {
   const response = await api.get("/api/metrics/overview");
   return response.data;

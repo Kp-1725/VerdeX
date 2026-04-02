@@ -325,6 +325,19 @@ async function addStageMetadata(req, res) {
       retailPrice !== null &&
       String(retailPrice).trim() !== "";
 
+    if (req.user.role === "Retailer" && normalizedStage !== "At Market") {
+      return res.status(403).json({
+        message:
+          "Retailer can update stage only when product reaches At Market.",
+      });
+    }
+
+    if (req.user.role === "Farmer" && normalizedStage === "At Market") {
+      return res.status(403).json({
+        message: "Farmer cannot update stage to At Market.",
+      });
+    }
+
     if (includesRetailPrice) {
       if (req.user.role !== "Retailer") {
         return res
@@ -518,6 +531,42 @@ async function getShelfProducts(req, res) {
   }
 }
 
+async function getRetailerProductOptions(req, res) {
+  try {
+    const relationships = await TradeRequest.find({
+      retailer: req.user._id,
+      status: { $in: ["Accepted", "Closed"] },
+    })
+      .select("farmer")
+      .lean();
+
+    const farmerIds = [
+      ...new Set(
+        relationships.map((item) => String(item?.farmer || "")).filter(Boolean),
+      ),
+    ];
+
+    if (!farmerIds.length) {
+      return res.json({ products: [] });
+    }
+
+    const products = await Product.find({
+      isArchived: false,
+      createdBy: { $in: farmerIds },
+    })
+      .sort({ updatedAt: -1 })
+      .limit(100)
+      .select("productId name createdByName updatedAt")
+      .lean();
+
+    return res.json({ products });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Could not fetch retailer product IDs." });
+  }
+}
+
 async function archiveMyProduct(req, res) {
   try {
     const parsedId = Number(req.params.productId);
@@ -567,5 +616,6 @@ module.exports = {
   getPriceRecommendation,
   getMlPriceForecast,
   getShelfProducts,
+  getRetailerProductOptions,
   archiveMyProduct,
 };

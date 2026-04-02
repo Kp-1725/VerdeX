@@ -8,6 +8,7 @@ const {
   getPriceRecommendation,
   getMlPriceForecast,
   getShelfProducts,
+  getRetailerProductOptions,
   archiveMyProduct,
 } = require("../controllers/productController");
 const { requireAuth } = require("../middleware/authMiddleware");
@@ -30,6 +31,12 @@ router.get(
   getMlPriceForecast,
 );
 router.get("/shelf", requireAuth, authorizeRoles("Retailer"), getShelfProducts);
+router.get(
+  "/retailer-options",
+  requireAuth,
+  authorizeRoles("Retailer"),
+  getRetailerProductOptions,
+);
 router.delete(
   "/:productId",
   requireAuth,
